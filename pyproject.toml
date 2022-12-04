@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "spotcrates"
+version = "0.1.0"
+description = ""
+authors = ["Chris Mayes <cmayes@cmay.es>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+flask = "^2.2.2"
+jinja2 = "^3.1.2"
+spotipy = "^2.21.0"
+flask-session = "^0.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
