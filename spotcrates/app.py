@@ -24,7 +24,7 @@ Run app.py
 """
 
 import os
-from flask import Flask, session, request, redirect
+from flask import Flask, session, request, redirect, render_template
 from flask_session import Session
 import spotipy
 
@@ -37,7 +37,6 @@ Session(app)
 
 @app.route('/')
 def index():
-
     cache_handler = spotipy.cache_handler.FlaskSessionCacheHandler(session)
     auth_manager = spotipy.oauth2.SpotifyOAuth(scope='user-read-currently-playing playlist-modify-private',
                                                cache_handler=cache_handler,
@@ -50,16 +49,19 @@ def index():
 
     if not auth_manager.validate_token(cache_handler.get_cached_token()):
         # Step 1. Display sign in link when no token
-        auth_url = auth_manager.get_authorize_url()
-        return f'<h2><a href="{auth_url}">Sign in</a></h2>'
+        context = {
+            'auth_url': auth_manager.get_authorize_url()
+        }
+
+        return render_template('index.html', **context)
 
     # Step 3. Signed in, display data
     spotify = spotipy.Spotify(auth_manager=auth_manager)
-    return f'<h2>Hi {spotify.me()["display_name"]}, ' \
-           f'<small><a href="/sign_out">[sign out]<a/></small></h2>' \
-           f'<a href="/playlists">my playlists</a> | ' \
-           f'<a href="/currently_playing">currently playing</a> | ' \
-           f'<a href="/current_user">me</a>'
+    context = {
+        'spotify': spotify
+    }
+    return render_template('auth_index.html', **context)
+
 
 @app.route('/sign_out')
 def sign_out():
