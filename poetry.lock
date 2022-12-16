@@ -301,7 +301,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "44c18e075bf5241235a3e6822a2ec60ab9de9304a6fbeb8c515bc6a06183109e"
+content-hash = "7c616bed075d55ab9012fbbe7333e0c3d08c252c71edbebe33ac0ea7707b36ba"
 
 [metadata.files]
 async-timeout = [
