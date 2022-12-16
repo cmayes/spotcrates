@@ -89,5 +89,5 @@ def print_playlist_page(playlist_items):
 if __name__ == '__main__':
     # print_all_playlists()
     # print_tracks()
-    #run_append_daily()
-    run_list_all()
+    run_append_daily()
+    #run_list_all()
