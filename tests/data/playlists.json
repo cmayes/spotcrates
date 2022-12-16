@@ -1,0 +1,120 @@
+[
+  {
+    "collaborative": false,
+    "description": "Spotify Wrapped presents the songs that you loved most this year.",
+    "external_urls": {
+      "spotify": "https://open.spotify.com/playlist/37i9dQZF1F0sijgNaJdgit"
+    },
+    "href": "https://api.spotify.com/v1/playlists/37i9dQZF1F0sijgNaJdgit",
+    "id": "37i9dQZF1F0sijgNaJdgit",
+    "images": [
+      {
+        "height": null,
+        "url": "https://wrapped-images.spotifycdn.com/image/yts-2022/large/your-top-songs-2022_large_en.jpg",
+        "width": null
+      }
+    ],
+    "name": "Your Top Songs 2022",
+    "owner": {
+      "display_name": "Spotify",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/user/spotify"
+      },
+      "href": "https://api.spotify.com/v1/users/spotify",
+      "id": "spotify",
+      "type": "user",
+      "uri": "spotify:user:spotify"
+    },
+    "primary_color": null,
+    "public": false,
+    "snapshot_id": "MTY2OTkwODk2MiwwMDAwMDAwMDBiNjFiY2QxNTNkMTdkZjM2MDAwYmUyNjE3M2RmODE5",
+    "tracks": {
+      "href": "https://api.spotify.com/v1/playlists/37i9dQZF1F0sijgNaJdgit/tracks",
+      "total": 101
+    },
+    "type": "playlist",
+    "uri": "spotify:playlist:37i9dQZF1F0sijgNaJdgit"
+  },
+  {
+    "collaborative": false,
+    "description": "Spotify Wrapped presents the songs that you loved most this year.",
+    "external_urls": {
+      "spotify": "https://open.spotify.com/playlist/37i9dQZF1EUMDoJuT8yJsl"
+    },
+    "href": "https://api.spotify.com/v1/playlists/37i9dQZF1EUMDoJuT8yJsl",
+    "id": "37i9dQZF1EUMDoJuT8yJsl",
+    "images": [
+      {
+        "height": null,
+        "url": "https://lineup-images.scdn.co/wrapped-2021-top100_LARGE-en.jpg",
+        "width": null
+      }
+    ],
+    "name": "Your Top Songs 2021",
+    "owner": {
+      "display_name": "Spotify",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/user/spotify"
+      },
+      "href": "https://api.spotify.com/v1/users/spotify",
+      "id": "spotify",
+      "type": "user",
+      "uri": "spotify:user:spotify"
+    },
+    "primary_color": null,
+    "public": false,
+    "snapshot_id": "MCwwMDAwMDAwMGFhNDFjZGYzMmI5OTY2N2JlOGQwMjBkYmM1NWE4MWNl",
+    "tracks": {
+      "href": "https://api.spotify.com/v1/playlists/37i9dQZF1EUMDoJuT8yJsl/tracks",
+      "total": 100
+    },
+    "type": "playlist",
+    "uri": "spotify:playlist:37i9dQZF1EUMDoJuT8yJsl"
+  },
+  {
+    "collaborative": false,
+    "description": "",
+    "external_urls": {
+      "spotify": "https://open.spotify.com/playlist/6Fm8FNQK2yY3Y4AKYNWbz5"
+    },
+    "href": "https://api.spotify.com/v1/playlists/6Fm8FNQK2yY3Y4AKYNWbz5",
+    "id": "6Fm8FNQK2yY3Y4AKYNWbz5",
+    "images": [
+      {
+        "height": 640,
+        "url": "https://mosaic.scdn.co/640/ab67616d0000b27338cbb79566212fcfb51f9e78ab67616d0000b2734c6c5ba83f726dbecf710361ab67616d0000b273867b8aabf60877fc21d3fd20ab67616d0000b273b099d03bb44b48861ac62594",
+        "width": 640
+      },
+      {
+        "height": 300,
+        "url": "https://mosaic.scdn.co/300/ab67616d0000b27338cbb79566212fcfb51f9e78ab67616d0000b2734c6c5ba83f726dbecf710361ab67616d0000b273867b8aabf60877fc21d3fd20ab67616d0000b273b099d03bb44b48861ac62594",
+        "width": 300
+      },
+      {
+        "height": 60,
+        "url": "https://mosaic.scdn.co/60/ab67616d0000b27338cbb79566212fcfb51f9e78ab67616d0000b2734c6c5ba83f726dbecf710361ab67616d0000b273867b8aabf60877fc21d3fd20ab67616d0000b273b099d03bb44b48861ac62594",
+        "width": 60
+      }
+    ],
+    "name": "Exercise",
+    "owner": {
+      "display_name": "cmayes3",
+      "external_urls": {
+        "spotify": "https://open.spotify.com/user/cmayes3"
+      },
+      "href": "https://api.spotify.com/v1/users/cmayes3",
+      "id": "cmayes3",
+      "type": "user",
+      "uri": "spotify:user:cmayes3"
+    },
+    "primary_color": null,
+    "public": false,
+    "snapshot_id": "MTAyLGYzMmU4ZjA3NGJjM2YwMjg3NjZhYzhlNmFlOGJlODJhMTBlMGM2YzI=",
+    "tracks": {
+      "href": "https://api.spotify.com/v1/playlists/6Fm8FNQK2yY3Y4AKYNWbz5/tracks",
+      "total": 54
+    },
+    "type": "playlist",
+    "uri": "spotify:playlist:6Fm8FNQK2yY3Y4AKYNWbz5"
+  }
+]
