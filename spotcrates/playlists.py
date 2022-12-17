@@ -27,6 +27,8 @@ def batched(iterable, n):
 class Playlists:
     def __init__(self, spotify: Spotify):
         self.spotify = spotify
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
 
     def get_all_playlists(self) -> dict:
         return self.spotify.current_user_playlists()['items']
@@ -52,7 +54,7 @@ class Playlists:
 
         # user_playlist_add_tracks(user, playlist_id, tracks, position=None)
         if not dailies:
-            logging.warning(f"No daily mixes found with the prefix '{daily_mix_prefix}'")
+            self.logger.warning(f"No daily mixes found with the prefix '{daily_mix_prefix}'")
 
         exclude_ids = self._get_playlist_track_ids(target_list["id"])
 
@@ -67,11 +69,11 @@ class Playlists:
             add_tracks.extend(
                 [daily_item for daily_item in daily_items if daily_item['track']['id'] not in exclude_ids])
 
-        logging.warning(f"{len(add_tracks)} to add from an original count of {orig_daily_count}")
+        self.logger.info(f"{len(add_tracks)} to add from an original count of {orig_daily_count}")
         if add_tracks:
             self._add_tracks_to_playlist(target_list, add_tracks)
         else:
-            logging.warning("No daily songs to add")
+            self.logger.warning("No daily songs to add")
 
     def _get_playlist_track_ids(self, *args: str) -> Set[str]:
         track_ids = set()
@@ -106,5 +108,5 @@ class Playlists:
         track_ids = {add_song['track']['id'] for add_song in add_tracks}
 
         for id_batch in batched(track_ids, 100):
-            logging.warning(f"Batch size: {len(id_batch)}")
+            self.logger.debug(f"Batch size: {len(id_batch)}")
             self.spotify.playlist_add_items(target_list["id"], id_batch)
