@@ -1,3 +1,5 @@
+import json
+
 import spotipy
 
 from spotcrates.playlists import Playlists
@@ -32,6 +34,13 @@ def run_append_daily():
 
     playlists = Playlists(sp)
     playlists.append_daily_mix()
+
+
+def run_list_all():
+    sp = get_spotify_handle()
+
+    playlists = Playlists(sp)
+    print(json.dumps(playlists.get_all_playlists()))
 
 
 def print_tracks():
@@ -79,5 +88,6 @@ def print_playlist_page(playlist_items):
 
 if __name__ == '__main__':
     # print_all_playlists()
-    #print_tracks()
+    # print_tracks()
     run_append_daily()
+    #run_list_all()
