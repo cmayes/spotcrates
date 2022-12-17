@@ -5,12 +5,12 @@
       "added_at": "2022-12-14T15:56:13Z",
       "added_by": {
         "external_urls": {
-          "spotify": "https://open.spotify.com/user/cmayes3"
+          "spotify": "https://open.spotify.com/user/testuser"
         },
-        "href": "https://api.spotify.com/v1/users/cmayes3",
-        "id": "cmayes3",
+        "href": "https://api.spotify.com/v1/users/testuser",
+        "id": "testuser",
         "type": "user",
-        "uri": "spotify:user:cmayes3"
+        "uri": "spotify:user:testuser"
       },
       "is_local": false,
       "primary_color": null,
@@ -127,12 +127,12 @@
       "added_at": "2022-12-14T15:56:13Z",
       "added_by": {
         "external_urls": {
-          "spotify": "https://open.spotify.com/user/cmayes3"
+          "spotify": "https://open.spotify.com/user/testuser"
         },
-        "href": "https://api.spotify.com/v1/users/cmayes3",
-        "id": "cmayes3",
+        "href": "https://api.spotify.com/v1/users/testuser",
+        "id": "testuser",
         "type": "user",
-        "uri": "spotify:user:cmayes3"
+        "uri": "spotify:user:testuser"
       },
       "is_local": false,
       "primary_color": null,
@@ -249,12 +249,12 @@
       "added_at": "2022-12-14T15:56:13Z",
       "added_by": {
         "external_urls": {
-          "spotify": "https://open.spotify.com/user/cmayes3"
+          "spotify": "https://open.spotify.com/user/testuser"
         },
-        "href": "https://api.spotify.com/v1/users/cmayes3",
-        "id": "cmayes3",
+        "href": "https://api.spotify.com/v1/users/testuser",
+        "id": "testuser",
         "type": "user",
-        "uri": "spotify:user:cmayes3"
+        "uri": "spotify:user:testuser"
       },
       "is_local": false,
       "primary_color": null,
@@ -371,12 +371,12 @@
       "added_at": "2022-12-14T15:56:13Z",
       "added_by": {
         "external_urls": {
-          "spotify": "https://open.spotify.com/user/cmayes3"
+          "spotify": "https://open.spotify.com/user/testuser"
         },
-        "href": "https://api.spotify.com/v1/users/cmayes3",
-        "id": "cmayes3",
+        "href": "https://api.spotify.com/v1/users/testuser",
+        "id": "testuser",
         "type": "user",
-        "uri": "spotify:user:cmayes3"
+        "uri": "spotify:user:testuser"
       },
       "is_local": false,
       "primary_color": null,
@@ -493,12 +493,12 @@
       "added_at": "2022-12-14T15:56:13Z",
       "added_by": {
         "external_urls": {
-          "spotify": "https://open.spotify.com/user/cmayes3"
+          "spotify": "https://open.spotify.com/user/testuser"
         },
-        "href": "https://api.spotify.com/v1/users/cmayes3",
-        "id": "cmayes3",
+        "href": "https://api.spotify.com/v1/users/testuser",
+        "id": "testuser",
         "type": "user",
-        "uri": "spotify:user:cmayes3"
+        "uri": "spotify:user:testuser"
       },
       "is_local": false,
       "primary_color": null,
@@ -615,12 +615,12 @@
       "added_at": "2022-12-14T15:56:13Z",
       "added_by": {
         "external_urls": {
-          "spotify": "https://open.spotify.com/user/cmayes3"
+          "spotify": "https://open.spotify.com/user/testuser"
         },
-        "href": "https://api.spotify.com/v1/users/cmayes3",
-        "id": "cmayes3",
+        "href": "https://api.spotify.com/v1/users/testuser",
+        "id": "testuser",
         "type": "user",
-        "uri": "spotify:user:cmayes3"
+        "uri": "spotify:user:testuser"
       },
       "is_local": false,
       "primary_color": null,
@@ -737,12 +737,12 @@
       "added_at": "2022-12-14T15:56:13Z",
       "added_by": {
         "external_urls": {
-          "spotify": "https://open.spotify.com/user/cmayes3"
+          "spotify": "https://open.spotify.com/user/testuser"
         },
-        "href": "https://api.spotify.com/v1/users/cmayes3",
-        "id": "cmayes3",
+        "href": "https://api.spotify.com/v1/users/testuser",
+        "id": "testuser",
         "type": "user",
-        "uri": "spotify:user:cmayes3"
+        "uri": "spotify:user:testuser"
       },
       "is_local": false,
       "primary_color": null,

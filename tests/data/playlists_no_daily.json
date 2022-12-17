@@ -93,42 +93,6 @@
   },
   {
     "collaborative": false,
-    "description": "Andrew Bird, Dana Gavanski, Cindy Lee and more",
-    "external_urls": {
-      "spotify": "https://open.spotify.com/playlist/37i9dQZF1E37hnawmowyJn"
-    },
-    "href": "https://api.spotify.com/v1/playlists/37i9dQZF1E37hnawmowyJn",
-    "id": "37i9dQZF1E37hnawmowyJn",
-    "images": [
-      {
-        "height": null,
-        "url": "https://dailymix-images.scdn.co/v2/img/ab6761610000e5eb4bb6b07ebb49a29e623961f4/1/en/large",
-        "width": null
-      }
-    ],
-    "name": "Daily Mix 1",
-    "owner": {
-      "display_name": "Spotify",
-      "external_urls": {
-        "spotify": "https://open.spotify.com/user/spotify"
-      },
-      "href": "https://api.spotify.com/v1/users/spotify",
-      "id": "spotify",
-      "type": "user",
-      "uri": "spotify:user:spotify"
-    },
-    "primary_color": null,
-    "public": false,
-    "snapshot_id": "MTY3MTEwMzUzOCwwMDAwMDAwMDhiNGRhZGY2ZmMxMmIyZGM2NzI3N2Y2ZWQ0YTNjMWMz",
-    "tracks": {
-      "href": "https://api.spotify.com/v1/playlists/37i9dQZF1E37hnawmowyJn/tracks",
-      "total": 50
-    },
-    "type": "playlist",
-    "uri": "spotify:playlist:37i9dQZF1E37hnawmowyJn"
-  },
-  {
-    "collaborative": false,
     "description": "Spotify Wrapped presents the songs that you loved most this year.",
     "external_urls": {
       "spotify": "https://open.spotify.com/playlist/37i9dQZF1F0sijgNaJdgit"
