@@ -31,7 +31,16 @@ class Playlists:
         self.logger.setLevel(logging.DEBUG)
 
     def get_all_playlists(self) -> dict:
-        return self.spotify.current_user_playlists()['items']
+        all_lists = []
+        first_page = self.spotify.current_user_playlists()
+        all_lists.extend(first_page['items'])
+
+        next_page = self.spotify.next(first_page)
+        while next_page:
+            all_lists.extend(next_page['items'])
+            next_page = self.spotify.next(next_page)
+
+        return all_lists
 
     def append_daily_mix(self, target_list_name=DAILY_MIX_TARGET, daily_mix_prefix=DAILY_MIX_PREFIX,
                          exclude_list_name=DAILY_MIX_EXCLUDES):
