@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spotcrates"
-version = "0.1.3"
+version = "0.2.0"
 description = ""
 authors = ["Chris Mayes <cmayes@cmay.es>"]
 readme = "README.md"
@@ -23,3 +23,8 @@ spotcrates = 'spotcrates.cli:main'
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.scriv]
+format = "md"
+main_branches = "trunk"
+

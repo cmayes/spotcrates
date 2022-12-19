@@ -3,7 +3,7 @@ import os
 import unittest
 from unittest.mock import MagicMock
 
-from spotcrates.playlists import Playlists, PlaylistException
+from spotcrates.playlists import Playlists
 
 
 def file_json(file_loc):
@@ -31,13 +31,11 @@ def get_canned_tracks(*args, **kwargs):
         raise Exception(f"Unhandled tracks ID {playlist_id}")
 
 
-
-
-
 class PlaylistTestCase(unittest.TestCase):
 
     def setUp(self):
         self.spotify = MagicMock()
+        self.spotify.next.return_value = None
         self.playlists = Playlists(self.spotify)
 
     def test_list_all(self):
@@ -50,25 +48,27 @@ class PlaylistTestCase(unittest.TestCase):
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        self.spotify.next.return_value = None
-
         self.playlists.append_daily_mix()
 
         self.spotify.playlist_add_items.assert_called_with('1JJB9ICuIoE6aD4jg9vgmV', ['3DrlHWCoFqHQYGwE8MWsuv'])
 
-    def test_append_daily_mix_no_target(self):
+    def test_append_daily_mix_missing_target(self):
         self.spotify.current_user_playlists.return_value = {'items': PLAYLIST_LIST}
+        self.spotify.me.return_value = {'id': 'testuser'}
+        self.spotify.user_playlist_create.return_value = {'id': '1JJB9ICuIoE6aD4jg9vgmV'}
 
-        with self.assertRaises(PlaylistException):
-            self.playlists.append_daily_mix(target_list_name="missing_playlist")
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+
+        local_playlists = Playlists(self.spotify, {'daily_mix_target': "missing_playlist"})
+        local_playlists.append_daily_mix()
+        self.spotify.playlist_add_items.assert_called_with('1JJB9ICuIoE6aD4jg9vgmV', ['3DrlHWCoFqHQYGwE8MWsuv'])
+        self.spotify.user_playlist_create.assert_called_with('testuser', "missing_playlist", public=False)
 
     # No dailies
     def test_append_daily_mix_no_dailies(self):
         self.spotify.current_user_playlists.return_value = {'items': PLAYLIST_NO_DAILY_LIST}
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
-
-        self.spotify.next.return_value = None
 
         self.playlists.append_daily_mix()
 
