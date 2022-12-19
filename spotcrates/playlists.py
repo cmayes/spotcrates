@@ -3,7 +3,7 @@ from typing import List, Set, Dict
 
 from spotipy import Spotify
 
-from spotcrates.common import batched
+from spotcrates.common import batched, get_all_items
 
 config_defaults = {
     'daily_mix_prefix': 'Daily Mix',
@@ -25,16 +25,7 @@ class Playlists:
         self.config = self._process_config(config)
 
     def get_all_playlists(self) -> List[Dict]:
-        all_lists = []
-        first_page = self.spotify.current_user_playlists()
-        all_lists.extend(first_page['items'])
-
-        next_page = self.spotify.next(first_page)
-        while next_page:
-            all_lists.extend(next_page['items'])
-            next_page = self.spotify.next(next_page)
-
-        return all_lists
+        return get_all_items(self.spotify, self.spotify.current_user_playlists())
 
     def append_daily_mix(self):
         dailies = []
@@ -86,14 +77,8 @@ class Playlists:
         track_ids = set()
         for playlist_id in args:
             # TODO: See about paring down to just the ID via "fields" param
-            playlist_items = self.spotify.playlist_items(playlist_id)
-
-            track_ids.update({playlist_item['track']['id'] for playlist_item in playlist_items['items']})
-
-            next_playlist_page = self.spotify.next(playlist_items)
-            while next_playlist_page:
-                track_ids.update({playlist_item['track']['id'] for playlist_item in next_playlist_page['items']})
-                next_playlist_page = self.spotify.next(next_playlist_page)
+            playlist_items = get_all_items(self.spotify, self.spotify.playlist_items(playlist_id))
+            track_ids.update({playlist_item['track']['id'] for playlist_item in playlist_items})
 
         return track_ids
 
@@ -101,13 +86,7 @@ class Playlists:
         tracks = []
         for playlist_id in args:
             # TODO: See about paring down to just the ID via "fields" param
-            playlist_items = self.spotify.playlist_items(playlist_id)
-            tracks.extend(playlist_items['items'])
-
-            next_playlist_page = self.spotify.next(playlist_items)
-            while next_playlist_page:
-                tracks.extend(next_playlist_page['items'])
-                next_playlist_page = self.spotify.next(next_playlist_page)
+            tracks.extend(get_all_items(self.spotify, self.spotify.playlist_items(playlist_id)))
 
         return tracks
 

@@ -41,7 +41,9 @@ class PlaylistTestCase(unittest.TestCase):
     def test_list_all(self):
         self.spotify.current_user_playlists.return_value = {'items': PLAYLIST_LIST}
 
-        self.assertEqual(PLAYLIST_LIST, self.playlists.get_all_playlists())
+        playlists = self.playlists.get_all_playlists()
+
+        self.assertEqual(PLAYLIST_LIST, playlists)
 
     def test_append_daily_mix(self):
         self.spotify.current_user_playlists.return_value = {'items': PLAYLIST_LIST}

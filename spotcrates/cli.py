@@ -83,6 +83,12 @@ def append_daily_mix(config):
     playlists.append_daily_mix()
 
 
+def list_playlists(config):
+    sp = get_spotify_handle(config)
+
+    playlists = Playlists(sp, config.get("playlists"))
+    playlists.get_all_playlists()
+
 def parse_cmdline(argv):
     """
     Returns the parsed argument list and return code.
