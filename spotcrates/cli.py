@@ -8,6 +8,8 @@ import argparse
 import logging
 import sys
 
+from spotcrates.common import truncate_long_value
+
 try:
     import tomllib
 except ModuleNotFoundError:
@@ -31,12 +33,15 @@ DEFAULT_CACHE_DIR = user_cache_dir('spotcrates')
 DEFAULT_AUTH_CACHE_FILE = Path(DEFAULT_CACHE_DIR, "spotcrates_auth_cache")
 DEFAULT_AUTH_SCOPES = ["playlist-modify-private", "playlist-read-private"]
 
-COMMANDS = ['daily']
+COMMANDS = ['daily', 'list-playlists', 'commands']
 
 COMMAND_DESCRIPTION = f"""
 {'COMMAND NAME':<16} DESCRIPTION
 {'daily':<16} Add "Daily Mix" entries to the end of the target playlist, filtering for excluded entries.
+{'list-playlists':<16} Prints a table describing your playlists.
+{'commands':<16} Prints this command list.
 """
+
 
 
 def print_commands():
@@ -85,9 +90,16 @@ def append_daily_mix(config):
 
 def list_playlists(config):
     sp = get_spotify_handle(config)
-
     playlists = Playlists(sp, config.get("playlists"))
-    playlists.get_all_playlists()
+
+    # {"name": playlist["name"], "size": playlist["tracks"]["total"],
+    #                                      "description": playlist["description"]})
+    print(f"{'PLAYLIST NAME':<32} {'SIZE':<6} {'OWNER':<16} DESCRIPTION")
+    for playlist_row in playlists.list_all_playlists():
+        print(f"""{truncate_long_value(playlist_row['name'], 32):<32} \
+{playlist_row['size']:<6} \
+{truncate_long_value(playlist_row['owner'], 16):<16} \
+{truncate_long_value(playlist_row['description'], 75)}""")
 
 def parse_cmdline(argv):
     """
@@ -123,6 +135,8 @@ def main(argv=None):
 
     if command == 'daily':
         append_daily_mix(config)
+    elif command == 'list-playlists':
+        list_playlists(config)
     elif command == 'commands':
         print_commands()
     else:
