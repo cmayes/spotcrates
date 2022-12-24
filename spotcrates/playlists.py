@@ -3,7 +3,7 @@ from typing import List, Set, Dict
 
 from spotipy import Spotify
 
-from spotcrates.common import batched, get_all_items
+from spotcrates.common import batched, get_all_items, filter_list
 
 config_defaults = {
     'daily_mix_prefix': 'Daily Mix',
@@ -24,14 +24,22 @@ class Playlists:
 
         self.config = self._process_config(config)
 
-    def get_all_playlists(self) -> List[Dict]:
-        return get_all_items(self.spotify, self.spotify.current_user_playlists())
+    def get_all_playlists(self, sort_fields=None, filters=None) -> List[Dict]:
+        all_items = get_all_items(self.spotify, self.spotify.current_user_playlists())
 
-    def list_all_playlists(self) -> List[Dict]:
+        if not sort_fields and not filters:
+            return all_items
+
+        if filters:
+            all_items = filter_list(all_items, filters)
+
+        return all_items
+
+    def list_all_playlists(self, sort_fields=None, filters=None) -> List[Dict]:
         playlist_entries = []
-        for playlist in self.get_all_playlists():
+        for playlist in self.get_all_playlists(sort_fields, filters):
             playlist_entries.append({"name": playlist["name"], "size": playlist["tracks"]["total"],
-                                     "owner": playlist["owner"]["id"],"description": playlist["description"]})
+                                     "owner": playlist["owner"]["id"], "description": playlist["description"]})
         return playlist_entries
 
     def append_daily_mix(self):

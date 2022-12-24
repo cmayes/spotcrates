@@ -43,7 +43,6 @@ COMMAND_DESCRIPTION = f"""
 """
 
 
-
 def print_commands():
     """Prints available commands."""
     print(COMMAND_DESCRIPTION)
@@ -101,6 +100,7 @@ def list_playlists(config):
 {truncate_long_value(playlist_row['owner'], 16):<16} \
 {truncate_long_value(playlist_row['description'], 75)}""")
 
+
 def parse_cmdline(argv):
     """
     Returns the parsed argument list and return code.
@@ -109,10 +109,11 @@ def parse_cmdline(argv):
     if argv is None:
         argv = sys.argv[1:]
 
-    # initialize the parser object:
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config_file", help="The location of the config file",
                         default=DEFAULT_CONFIG_FILE, type=Path)
+    parser.add_argument("-s", "--sort_fields", help="The fields to sort against, applied in order")
+    parser.add_argument("-f", "--filters", help="Filters to apply to the list")
     parser.add_argument("command", metavar='COMMAND',
                         help=f"The command to run (one of {','.join(COMMANDS)})")
     args = None
