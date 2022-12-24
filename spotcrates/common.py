@@ -1,10 +1,17 @@
 import logging
+from collections import defaultdict
 from enum import auto, Enum
 from itertools import islice
+from typing import List, Dict
+
 import pygtrie
 
 
 class NotFoundException(Exception):
+    pass
+
+
+class InvalidFilterException(Exception):
     pass
 
 
@@ -60,6 +67,13 @@ class FilterType(Enum):
     LESS_EQUAL = auto()
 
 
+class FieldName(Enum):
+    PLAYLIST_NAME = auto()
+    SIZE = auto()
+    OWNER = auto()
+    PLAYLIST_DESCRIPTION = auto()
+
+
 class FilterLookup():
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -93,12 +107,70 @@ class FilterLookup():
         return lookup
 
 
+class FieldLookup():
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+        self.lookup = FieldLookup._init_lookup()
+
+    def find(self, field_name):
+        if not field_name:
+            raise NotFoundException(f"Blank/null field name {field_name}")
+
+        found_field = self.lookup.longest_prefix(field_name)
+
+        if found_field:
+            self.logger.debug("Got %s (%s) for %s", found_field.value, found_field.key, field_name)
+            return found_field.value
+        else:
+            raise NotFoundException(f"No field name for {field_name}")
+
+    @staticmethod
+    def _init_lookup():
+        lookup = pygtrie.CharTrie()
+        lookup['n'] = FieldName.PLAYLIST_NAME
+        lookup['p'] = FieldName.PLAYLIST_NAME
+        lookup['pl'] = FieldName.PLAYLIST_NAME
+        lookup['pn'] = FieldName.PLAYLIST_NAME
+        lookup['s'] = FieldName.SIZE
+        lookup['ps'] = FieldName.SIZE
+        lookup['d'] = FieldName.PLAYLIST_DESCRIPTION
+        lookup['pd'] = FieldName.PLAYLIST_DESCRIPTION
+        lookup['c'] = FieldName.SIZE
+        lookup['s'] = FieldName.SIZE
+        lookup['o'] = FieldName.OWNER
+
+        return lookup
+
+
 class FieldFilter:
     def __init__(self, field, value, filter_type):
-        pass
+        self.filter_lookup = FilterLookup()
+        self.field_lookup = FieldLookup()
+        self.field = field
+        self.value = value
+        self.filter_type = self.eval_filter_type(filter_type)
+
+    def eval_field_name(self, field_name):
+        field_name_type = type(field_name)
+        if field_name_type == FieldName:
+            return field_name
+        elif field_name_type == str:
+            return self.field_lookup.find(field_name_type)
+        else:
+            raise InvalidFilterException(f"Invalid field name type {field_name_type}")
+
+    def eval_filter_type(self, filter_type):
+        filter_type_type = type(filter_type)
+        if filter_type_type == FilterType:
+            return filter_type
+        elif filter_type_type == str:
+            return self.filter_lookup.find(filter_type_type)
+        else:
+            raise InvalidFilterException(f"Invalid filter type {filter_type_type}")
 
 
-def parse_filters(filters):
+def parse_filters(filters: str) -> Dict[str, List[FieldFilter]]:
     """Returns a dict keyed by field with values being a list of
     name:PoP
     size:gt:22
@@ -108,7 +180,27 @@ def parse_filters(filters):
     :param filters: A str with a comma-separated list of filters
     :return: A map of field names to lower-case "contains" filter strings.
     """
-    pass
+    parsed_filters = defaultdict(list)
+
+    if not filters:
+        return parsed_filters
+
+    raw_filters = [raw_filter.strip() for raw_filter in filters.split(",")]
+    split_raw_filters = [raw_filter.split(":") for raw_filter in raw_filters]
+
+    for raw_exp in split_raw_filters:
+        exp_field_count = len(raw_exp)
+
+        if exp_field_count < 2:
+            raise InvalidFilterException(f"Invalid filter expression {':'.join(raw_exp)}")
+
+        stripped_exp = [field.strip() for field in raw_exp]
+        if exp_field_count == 2:
+            parsed_filters[stripped_exp[0]].append(FieldFilter(stripped_exp[0], stripped_exp[1], FilterType.CONTAINS))
+        else:
+            parsed_filters[stripped_exp[0]].append(FieldFilter(stripped_exp[0], stripped_exp[2], stripped_exp[1]))
+
+    return parsed_filters
 
 
 def filter_list(all_items, filters):
