@@ -8,7 +8,7 @@ import argparse
 import logging
 import sys
 
-from spotcrates.common import truncate_long_value
+from spotcrates.common import truncate_long_value, FieldName
 
 try:
     import tomllib
@@ -95,10 +95,10 @@ def list_playlists(config):
     #                                      "description": playlist["description"]})
     print(f"{'PLAYLIST NAME':<32} {'SIZE':<6} {'OWNER':<16} DESCRIPTION")
     for playlist_row in playlists.list_all_playlists():
-        print(f"""{truncate_long_value(playlist_row['name'], 32):<32} \
-{playlist_row['size']:<6} \
-{truncate_long_value(playlist_row['owner'], 16):<16} \
-{truncate_long_value(playlist_row['description'], 75)}""")
+        print(f"""{truncate_long_value(playlist_row[FieldName.PLAYLIST_NAME], 32):<32} \
+{playlist_row[FieldName.SIZE]:<6} \
+{truncate_long_value(playlist_row[FieldName.OWNER], 16):<16} \
+{truncate_long_value(playlist_row[FieldName.PLAYLIST_DESCRIPTION], 75)}""")
 
 
 def parse_cmdline(argv):

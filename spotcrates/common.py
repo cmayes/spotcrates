@@ -147,7 +147,7 @@ class FieldFilter:
     def __init__(self, field, value, filter_type):
         self.filter_lookup = FilterLookup()
         self.field_lookup = FieldLookup()
-        self.field = field
+        self.field = self.eval_field_name(field)
         self.value = value
         self.filter_type = self.eval_filter_type(filter_type)
 
@@ -156,7 +156,7 @@ class FieldFilter:
         if field_name_type == FieldName:
             return field_name
         elif field_name_type == str:
-            return self.field_lookup.find(field_name_type)
+            return self.field_lookup.find(field_name)
         else:
             raise InvalidFilterException(f"Invalid field name type {field_name_type}")
 
@@ -165,12 +165,21 @@ class FieldFilter:
         if filter_type_type == FilterType:
             return filter_type
         elif filter_type_type == str:
-            return self.filter_lookup.find(filter_type_type)
+            return self.filter_lookup.find(filter_type)
         else:
             raise InvalidFilterException(f"Invalid filter type {filter_type_type}")
 
+    def __repr__(self):
+        return f"FieldFilter({self.field}, {self.value}, {self.filter_type})"
 
-def parse_filters(filters: str) -> Dict[str, List[FieldFilter]]:
+    def __eq__(self, other):
+        if isinstance(other, FieldFilter):
+            return self.field == other.field and self.value == other.value \
+                and self.filter_type == other.filter_type
+        return NotImplemented
+
+
+def parse_filters(filters: str) -> Dict[FieldName, List[FieldFilter]]:
     """Returns a dict keyed by field with values being a list of
     name:PoP
     size:gt:22
@@ -196,9 +205,10 @@ def parse_filters(filters: str) -> Dict[str, List[FieldFilter]]:
 
         stripped_exp = [field.strip() for field in raw_exp]
         if exp_field_count == 2:
-            parsed_filters[stripped_exp[0]].append(FieldFilter(stripped_exp[0], stripped_exp[1], FilterType.CONTAINS))
+            field_filter = FieldFilter(stripped_exp[0], stripped_exp[1], FilterType.CONTAINS)
         else:
-            parsed_filters[stripped_exp[0]].append(FieldFilter(stripped_exp[0], stripped_exp[2], stripped_exp[1]))
+            field_filter = FieldFilter(stripped_exp[0], stripped_exp[2], stripped_exp[1])
+        parsed_filters[field_filter.field].append(field_filter)
 
     return parsed_filters
 
