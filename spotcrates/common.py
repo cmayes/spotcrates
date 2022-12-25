@@ -48,6 +48,9 @@ def truncate_long_value(full_value: str, length: int, trim_tail: bool = True) ->
     :param trim_tail: Whether to trim from the head or tail of the string.
     :return: The value trimmed from the start of the string to be at most the given length.
     """
+    if not full_value:
+        return full_value
+
     if len(full_value) > length:
         if trim_tail:
             return full_value[:length]

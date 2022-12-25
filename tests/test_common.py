@@ -1,7 +1,7 @@
 import unittest
 
 from spotcrates.common import FilterLookup, FilterType, NotFoundException, FieldLookup, FieldName, parse_filters, \
-    FieldFilter
+    FieldFilter, InvalidFilterException, truncate_long_value
 
 
 class FilterLookupTestCase(unittest.TestCase):
@@ -148,3 +148,37 @@ class ParseFiltersTestCase(unittest.TestCase):
 
         second_size_filter = size_filters[1]
         self.assertEqual(FieldFilter(FieldName.SIZE, "1234", FilterType.LESS), second_size_filter)
+
+    def test_invalid_field(self):
+        with self.assertRaises(NotFoundException):
+            parse_filters("zzz:testuser")
+
+    def test_invalid_filter_type(self):
+        with self.assertRaises(NotFoundException):
+            parse_filters("o:zzz:testuser")
+
+    def test_empty_filter(self):
+        self.assertEqual({}, parse_filters(""))
+
+    def test_single_element_filter(self):
+        with self.assertRaises(InvalidFilterException):
+            parse_filters("invalid")
+
+    def test_null_filter(self):
+        self.assertEqual({}, parse_filters(None))
+
+
+# truncate_long_value
+
+class TruncateLongValueTestCase(unittest.TestCase):
+    def test_default_trunc(self):
+        self.assertEqual("some_", truncate_long_value("some_long_string", 5))
+
+    def test_end_trunc(self):
+        self.assertEqual("tring", truncate_long_value("some_long_string", 5, trim_tail=False))
+
+    def test_empty(self):
+        self.assertEqual("", truncate_long_value("", 5, trim_tail=False))
+
+    def test_null(self):
+        self.assertEqual(None, truncate_long_value(None, 5, trim_tail=False))
