@@ -3,7 +3,7 @@ from typing import List, Set, Dict
 
 from spotipy import Spotify
 
-from spotcrates.common import batched, get_all_items, filter_list, FieldName
+from spotcrates.common import batched, get_all_items, FieldName, filter_list
 
 config_defaults = {
     'daily_mix_prefix': 'Daily Mix',
@@ -113,7 +113,8 @@ class Playlists:
             self.logger.debug(f"Batch size: {len(id_batch)}")
             self.spotify.playlist_add_items(target_list["id"], id_batch)
 
-    def _process_config(self, config: Dict) -> Dict:
+    @staticmethod
+    def _process_config(config: Dict) -> Dict:
         processed_config = {}
 
         source_config = {}

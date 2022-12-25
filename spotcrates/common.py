@@ -16,7 +16,7 @@ class InvalidFilterException(Exception):
 
 
 def batched(iterable, n):
-    "Batch data into lists of length n. The last batch may be shorter."
+    """Batch data into lists of length n. The last batch may be shorter."""
     # batched('ABCDEFG', 3) --> ABC DEF G
     it = iter(iterable)
     while True:
@@ -27,7 +27,7 @@ def batched(iterable, n):
 
 
 def get_all_items(spotify, first_page):
-    "Collects the 'items' contents from every page in the given result set."
+    """Collects the 'items' contents from every page in the given result set."""
     all_items = []
 
     all_items.extend(first_page['items'])
@@ -59,25 +59,68 @@ def truncate_long_value(full_value: str, length: int, trim_tail: bool = True) ->
     return full_value
 
 
+def test_str_contains(test_val, target_val) -> bool:
+    return str(test_val) in str(target_val)
+
+
+def test_str_equals(test_val, target_val) -> bool:
+    return str(test_val) == str(target_val)
+
+
+def test_str_starts(test_val, target_val) -> bool:
+    return str(target_val).startswith(str(test_val))
+
+
+def test_str_ends(test_val, target_val) -> bool:
+    return str(target_val).endswith(str(test_val))
+
+
+def test_num_greater(test_val, target_val) -> bool:
+    return int(target_val) > int(test_val)
+
+
+def test_num_greater_equal(test_val, target_val) -> bool:
+    return int(target_val) >= int(test_val)
+
+
+def test_num_less(test_val, target_val) -> bool:
+    return int(target_val) < int(test_val)
+
+
+def test_num_less_equal(test_val, target_val) -> bool:
+    return int(target_val) <= int(test_val)
+
+
 class FilterType(Enum):
-    CONTAINS = auto()
-    EQUALS = auto()
-    STARTS = auto()
-    ENDS = auto()
-    GREATER = auto()
-    LESS = auto()
-    GREATER_EQUAL = auto()
-    LESS_EQUAL = auto()
+    def __init__(self, test_func):
+        self.test = test_func
+
+    CONTAINS = test_str_contains
+    EQUALS = test_str_equals
+    STARTS = test_str_starts
+    ENDS = test_str_ends
+    GREATER = test_num_greater
+    LESS = test_num_less
+    GREATER_EQUAL = test_num_greater_equal
+    LESS_EQUAL = test_num_less_equal
+
+
+class FieldDataType(Enum):
+    STRING = auto()
+    NUMERIC = auto()
 
 
 class FieldName(Enum):
-    PLAYLIST_NAME = auto()
-    SIZE = auto()
-    OWNER = auto()
-    PLAYLIST_DESCRIPTION = auto()
+    def __init__(self, data_type):
+        self.data_type = data_type
+
+    PLAYLIST_NAME = FieldDataType.STRING
+    SIZE = FieldDataType.NUMERIC
+    OWNER = FieldDataType.STRING
+    PLAYLIST_DESCRIPTION = FieldDataType.STRING
 
 
-class FilterLookup():
+class FilterLookup:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -110,7 +153,7 @@ class FilterLookup():
         return lookup
 
 
-class FieldLookup():
+class FieldLookup:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -163,7 +206,7 @@ class FieldFilter:
         else:
             raise InvalidFilterException(f"Invalid field name type {field_name_type}")
 
-    def eval_filter_type(self, filter_type):
+    def eval_filter_type(self, filter_type) -> FilterType:
         filter_type_type = type(filter_type)
         if filter_type_type == FilterType:
             return filter_type
@@ -216,8 +259,22 @@ def parse_filters(filters: str) -> Dict[FieldName, List[FieldFilter]]:
     return parsed_filters
 
 
-def filter_list(all_items, filters):
-    parse_filters(filters)
-    filtered_items = []
+# TODO: Test filter_list and consider moving filter to separate file
+def filter_list(items, filters):
+    parsed_filters = parse_filters(filters)
 
-    pass
+    filtered_items = items
+    for field in FieldName:
+        field_filters = parsed_filters[field]
+        if field_filters:
+            for cur_filter in field_filters:
+                filter_test = cur_filter.filter_type.test
+                test_value = cur_filter.value
+
+                matching_items = []
+                for cur_item in filtered_items:
+                    if filter_test(test_value, cur_item.get(cur_filter.field)):
+                        matching_items.append(cur_item)
+                filtered_items = matching_items
+
+    return filtered_items
