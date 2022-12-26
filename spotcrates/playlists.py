@@ -3,7 +3,8 @@ from typing import List, Set, Dict
 
 from spotipy import Spotify
 
-from spotcrates.common import batched, get_all_items, FieldName, filter_list
+from spotcrates.common import batched, get_all_items
+from spotcrates.filters import FieldName, filter_list
 
 config_defaults = {
     'daily_mix_prefix': 'Daily Mix',

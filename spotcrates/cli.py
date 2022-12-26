@@ -8,7 +8,8 @@ import argparse
 import logging
 import sys
 
-from spotcrates.common import truncate_long_value, FieldName
+from spotcrates.common import truncate_long_value
+from spotcrates.filters import FieldName
 
 try:
     import tomllib
