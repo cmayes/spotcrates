@@ -167,3 +167,9 @@ class ParseFiltersTestCase(unittest.TestCase):
 
     def test_null_filter(self):
         self.assertEqual({}, parse_filters(None))
+
+class FilterListTestCase(unittest.TestCase):
+    # filter_list
+    def test_null_filter(self):
+
+        self.assertEqual({}, parse_filters(None))
