@@ -1,7 +1,6 @@
 import logging
 from collections import defaultdict
 from enum import Enum, auto
-from operator import itemgetter
 from typing import Dict, List
 
 import pygtrie
@@ -297,4 +296,4 @@ def sort_list(items, sort_exp):
 
     sorter = parsed_sorts[0]
 
-    return sorted(items, key=itemgetter(sorter.field), reverse=sorter.sort_type == SortType.DESCENDING)
+    return sorted(items, key=lambda d: d[sorter.field], reverse=sorter.sort_type == SortType.DESCENDING)
