@@ -114,41 +114,41 @@ class ParseFiltersTestCase(unittest.TestCase):
         owner_filters = filters.get(FieldName.OWNER)
         self.assertEqual(1, len(owner_filters))
         first_filter = owner_filters[0]
-        self.assertEqual(FieldFilter(FieldName.OWNER, "testuser", FilterType.CONTAINS), first_filter)
+        self.assertEqual(FieldFilter(FieldName.OWNER, FilterType.CONTAINS, "testuser"), first_filter)
 
     def test_desc(self):
         filters = parse_filters("desc:sta:beginning")
         desc_filters = filters.get(FieldName.PLAYLIST_DESCRIPTION)
         self.assertEqual(1, len(desc_filters))
         first_filter = desc_filters[0]
-        self.assertEqual(FieldFilter(FieldName.PLAYLIST_DESCRIPTION, "beginning", FilterType.STARTS), first_filter)
+        self.assertEqual(FieldFilter(FieldName.PLAYLIST_DESCRIPTION, FilterType.STARTS, "beginning"), first_filter)
 
     def test_name_size(self):
         filters = parse_filters("name:eq:specific_name, s:ge :99")
         name_filters = filters.get(FieldName.PLAYLIST_NAME)
         self.assertEqual(1, len(name_filters))
         first_filter = name_filters[0]
-        self.assertEqual(FieldFilter(FieldName.PLAYLIST_NAME, "specific_name", FilterType.EQUALS), first_filter)
+        self.assertEqual(FieldFilter(FieldName.PLAYLIST_NAME, FilterType.EQUALS, "specific_name"), first_filter)
 
         size_filters = filters.get(FieldName.SIZE)
         self.assertEqual(1, len(size_filters))
         first_size_filter = size_filters[0]
-        self.assertEqual(FieldFilter(FieldName.SIZE, "99", FilterType.GREATER_EQUAL), first_size_filter)
+        self.assertEqual(FieldFilter(FieldName.SIZE, FilterType.GREATER_EQUAL, "99"), first_size_filter)
 
     def test_name_size_multi(self):
         filters = parse_filters("name:eq:specific_name, s:ge :99, s:lt: 1234")
         name_filters = filters.get(FieldName.PLAYLIST_NAME)
         self.assertEqual(1, len(name_filters))
         first_filter = name_filters[0]
-        self.assertEqual(FieldFilter(FieldName.PLAYLIST_NAME, "specific_name", FilterType.EQUALS), first_filter)
+        self.assertEqual(FieldFilter(FieldName.PLAYLIST_NAME, FilterType.EQUALS, "specific_name"), first_filter)
 
         size_filters = filters.get(FieldName.SIZE)
         self.assertEqual(2, len(size_filters))
         first_size_filter = size_filters[0]
-        self.assertEqual(FieldFilter(FieldName.SIZE, "99", FilterType.GREATER_EQUAL), first_size_filter)
+        self.assertEqual(FieldFilter(FieldName.SIZE, FilterType.GREATER_EQUAL, "99"), first_size_filter)
 
         second_size_filter = size_filters[1]
-        self.assertEqual(FieldFilter(FieldName.SIZE, "1234", FilterType.LESS), second_size_filter)
+        self.assertEqual(FieldFilter(FieldName.SIZE, FilterType.LESS, "1234"), second_size_filter)
 
     def test_invalid_field(self):
         with self.assertRaises(NotFoundException):

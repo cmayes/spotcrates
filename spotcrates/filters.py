@@ -24,13 +24,13 @@ class FilterType(Enum):
 
     def test(self, filter_val, target_val) -> bool:
         if self == FilterType.CONTAINS:
-            return str(filter_val) in str(target_val)
+            return str(filter_val).lower() in str(target_val).lower()
         elif self == FilterType.EQUALS:
-            return str(filter_val) == str(target_val)
+            return str(filter_val).lower() == str(target_val).lower()
         elif self == FilterType.STARTS:
-            return str(target_val).startswith(str(filter_val))
+            return str(target_val).lower().startswith(str(filter_val).lower())
         elif self == FilterType.ENDS:
-            return str(target_val).endswith(str(filter_val))
+            return str(target_val).lower().endswith(str(filter_val).lower())
         elif self == FilterType.GREATER:
             return int(target_val) > int(filter_val)
         elif self == FilterType.GREATER_EQUAL:
@@ -43,19 +43,11 @@ class FilterType(Enum):
             raise NotFoundException(f"Unhandled filter type {self}")
 
 
-class FieldDataType(Enum):
-    STRING = auto()
-    NUMERIC = auto()
-
-
 class FieldName(Enum):
-    def __init__(self, data_type):
-        self.data_type = data_type
-
-    PLAYLIST_NAME = FieldDataType.STRING
-    SIZE = FieldDataType.NUMERIC
-    OWNER = FieldDataType.STRING
-    PLAYLIST_DESCRIPTION = FieldDataType.STRING
+    PLAYLIST_NAME = auto()
+    SIZE = auto()
+    OWNER = auto()
+    PLAYLIST_DESCRIPTION = auto()
 
 
 class FilterLookup:
@@ -130,7 +122,7 @@ class FieldLookup:
 
 
 class FieldFilter:
-    def __init__(self, field, value, filter_type):
+    def __init__(self, field, filter_type, value):
         self.filter_lookup = FilterLookup()
         self.field_lookup = FieldLookup()
         self.filter_type = self.eval_filter_type(filter_type)
@@ -194,9 +186,9 @@ def parse_filters(filters: str) -> Dict[FieldName, List[FieldFilter]]:
 
         stripped_exp = [field.strip() for field in raw_exp]
         if exp_field_count == 2:
-            field_filter = FieldFilter(stripped_exp[0], stripped_exp[1], FilterType.CONTAINS)
+            field_filter = FieldFilter(stripped_exp[0], FilterType.CONTAINS, stripped_exp[1])
         else:
-            field_filter = FieldFilter(stripped_exp[0], stripped_exp[2], stripped_exp[1])
+            field_filter = FieldFilter(stripped_exp[0], stripped_exp[1], stripped_exp[2])
         parsed_filters[field_filter.field].append(field_filter)
 
     return parsed_filters
@@ -213,7 +205,8 @@ def filter_list(items, filters):
             for cur_filter in field_filters:
                 matching_items = []
                 for cur_item in filtered_items:
-                    if cur_filter.passes(cur_item):
+                    item_field = cur_item.get(field)
+                    if cur_filter.passes(item_field):
                         matching_items.append(cur_item)
                 filtered_items = matching_items
 

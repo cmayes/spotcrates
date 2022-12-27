@@ -3,7 +3,7 @@ from typing import List, Set, Dict
 
 from spotipy import Spotify
 
-from spotcrates.common import batched, get_all_items
+from spotcrates.common import batched, get_all_items, NotFoundException
 from spotcrates.filters import FieldName, filter_list
 
 config_defaults = {
@@ -25,24 +25,23 @@ class Playlists:
 
         self.config = self._process_config(config)
 
-    def get_all_playlists(self, sort_fields=None, filters=None) -> List[Dict]:
-        all_items = get_all_items(self.spotify, self.spotify.current_user_playlists())
-
-        if not sort_fields and not filters:
-            return all_items
-
-        if filters:
-            all_items = filter_list(all_items, filters)
-
-        return all_items
+    def get_all_playlists(self) -> List[Dict]:
+        return get_all_items(self.spotify, self.spotify.current_user_playlists())
 
     def list_all_playlists(self, sort_fields=None, filters=None) -> List[Dict]:
         playlist_entries = []
-        for playlist in self.get_all_playlists(sort_fields, filters):
+        for playlist in self.get_all_playlists():
             playlist_entries.append(
                 {FieldName.PLAYLIST_NAME: playlist["name"], FieldName.SIZE: playlist["tracks"]["total"],
                  FieldName.OWNER: playlist["owner"]["id"], FieldName.PLAYLIST_DESCRIPTION: playlist["description"]})
-        return playlist_entries
+
+        if not sort_fields and not filters:
+            return playlist_entries
+
+        if filters:
+            return filter_list(playlist_entries, filters)
+
+        raise NotFoundException("Filtering logic probably changed: need sort field logic")
 
     def append_daily_mix(self):
         dailies = []

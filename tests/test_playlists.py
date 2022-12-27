@@ -1,15 +1,9 @@
-import json
 import os
 import unittest
 from unittest.mock import MagicMock
 
 from spotcrates.playlists import Playlists
-
-
-def file_json(file_loc):
-    with open(file_loc, 'r') as playlist_list_handle:
-        return json.load(playlist_list_handle)
-
+from tests.utils import file_json
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 PLAYLIST_LIST = file_json(os.path.join(DATA_DIR, 'playlists.json'))
