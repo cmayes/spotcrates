@@ -1,11 +1,15 @@
 import logging
 from collections import defaultdict
 from enum import Enum, auto
+from operator import itemgetter
 from typing import Dict, List
 
 import pygtrie
 
 from spotcrates.common import NotFoundException
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class InvalidFilterException(Exception):
@@ -69,6 +73,15 @@ class FilterLookup:
         else:
             raise NotFoundException(f"No filter type for {type_name}")
 
+    def eval_filter_type(self, filter_type) -> FilterType:
+        filter_type_type = type(filter_type)
+        if filter_type_type == FilterType:
+            return filter_type
+        elif filter_type_type == str:
+            return self.find(filter_type)
+        else:
+            raise InvalidFilterException(f"Invalid filter type {filter_type_type}")
+
     @staticmethod
     def _init_lookup():
         lookup = pygtrie.CharTrie()
@@ -103,6 +116,15 @@ class FieldLookup:
         else:
             raise NotFoundException(f"No field name for {field_name}")
 
+    def eval_field_name(self, field_name):
+        field_name_type = type(field_name)
+        if field_name_type == FieldName:
+            return field_name
+        elif field_name_type == str:
+            return self.find(field_name)
+        else:
+            raise InvalidFilterException(f"Invalid field name type {field_name_type}")
+
     @staticmethod
     def _init_lookup():
         lookup = pygtrie.CharTrie()
@@ -125,27 +147,9 @@ class FieldFilter:
     def __init__(self, field, filter_type, value):
         self.filter_lookup = FilterLookup()
         self.field_lookup = FieldLookup()
-        self.filter_type = self.eval_filter_type(filter_type)
-        self.field = self.eval_field_name(field)
+        self.filter_type = self.filter_lookup.eval_filter_type(filter_type)
+        self.field = self.field_lookup.eval_field_name(field)
         self.value = value
-
-    def eval_field_name(self, field_name):
-        field_name_type = type(field_name)
-        if field_name_type == FieldName:
-            return field_name
-        elif field_name_type == str:
-            return self.field_lookup.find(field_name)
-        else:
-            raise InvalidFilterException(f"Invalid field name type {field_name_type}")
-
-    def eval_filter_type(self, filter_type) -> FilterType:
-        filter_type_type = type(filter_type)
-        if filter_type_type == FilterType:
-            return filter_type
-        elif filter_type_type == str:
-            return self.filter_lookup.find(filter_type)
-        else:
-            raise InvalidFilterException(f"Invalid filter type {filter_type_type}")
 
     def passes(self, target_value) -> bool:
         return self.filter_type.test(self.value, target_value)
@@ -211,3 +215,85 @@ def filter_list(items, filters):
                 filtered_items = matching_items
 
     return filtered_items
+
+
+class SortType(Enum):
+    ASCENDING = auto()
+    DESCENDING = auto()
+
+
+class SortLookup:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+        self.lookup = SortLookup._init_lookup()
+
+    def find(self, sort_type):
+        if not sort_type:
+            raise NotFoundException(f"Blank/null sort type {sort_type}")
+
+        found_sort = self.lookup.longest_prefix(sort_type)
+
+        if found_sort:
+            self.logger.debug("Got %s (%s) for %s", found_sort.value, found_sort.key, sort_type)
+            found_val = found_sort.value
+            return found_val
+        else:
+            raise NotFoundException(f"No sort type for {sort_type}")
+
+    def eval_sort_type(self, sort_type):
+        sort_type_type = type(sort_type)
+        if sort_type_type == SortType:
+            return sort_type
+        elif sort_type_type == str:
+            return self.find(sort_type)
+        else:
+            raise InvalidFilterException(f"Invalid sort type {sort_type_type}")
+
+    @staticmethod
+    def _init_lookup():
+        lookup = pygtrie.CharTrie()
+        lookup['a'] = SortType.ASCENDING
+        lookup['d'] = SortType.DESCENDING
+        return lookup
+
+
+class FieldSort:
+    def __init__(self, field, sort_type):
+        self.sort_lookup = SortLookup()
+        self.field_lookup = FieldLookup()
+        self.sort_type = self.sort_lookup.eval_sort_type(sort_type)
+        self.field = self.field_lookup.eval_field_name(field)
+
+
+def parse_sorts(sorts: str) -> List[FieldSort]:
+    parsed_sorts = []
+
+    if not sorts:
+        return parsed_sorts
+
+    raw_sorts = [raw_sort.strip() for raw_sort in sorts.split(",")]
+    split_raw_sorts = [raw_sort.split(":") for raw_sort in raw_sorts]
+
+    for raw_exp in split_raw_sorts:
+        exp_field_count = len(raw_exp)
+
+        stripped_exp = [field.strip() for field in raw_exp]
+        if exp_field_count == 1:
+            parsed_sorts.append(FieldSort(stripped_exp[0], SortType.ASCENDING))
+        elif exp_field_count == 2:
+            parsed_sorts.append(FieldSort(stripped_exp[0], stripped_exp[1]))
+
+
+def sort_list(items, sort_exp):
+    parsed_sorts = parse_sorts(sort_exp)
+
+    if not parsed_sorts:
+        return items
+
+    if len(parsed_sorts) > 1:
+        logger.warning("Only the first sort field is currently applied")
+
+    sorter = parsed_sorts[0]
+
+    return sorted(items, key=itemgetter(sorter.field), reverse=sorter.sort_type == SortType.DESCENDING)
