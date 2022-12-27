@@ -3,8 +3,8 @@ from typing import List, Set, Dict
 
 from spotipy import Spotify
 
-from spotcrates.common import batched, get_all_items, NotFoundException
-from spotcrates.filters import FieldName, filter_list
+from spotcrates.common import batched, get_all_items
+from spotcrates.filters import FieldName, filter_list, sort_list
 
 config_defaults = {
     'daily_mix_prefix': 'Daily Mix',
@@ -38,10 +38,14 @@ class Playlists:
         if not sort_fields and not filters:
             return playlist_entries
 
+        processed_entries = playlist_entries
         if filters:
-            return filter_list(playlist_entries, filters)
+            processed_entries = filter_list(processed_entries, filters)
 
-        raise NotFoundException("Filtering logic probably changed: need sort field logic")
+        if sort_fields:
+            processed_entries = sort_list(processed_entries, sort_fields)
+
+        return processed_entries
 
     def append_daily_mix(self):
         dailies = []

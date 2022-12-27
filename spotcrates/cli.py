@@ -91,7 +91,7 @@ def append_daily_mix(config):
 def list_playlists(config, args):
     sp = get_spotify_handle(config)
     playlists = Playlists(sp, config.get("playlists"))
-    all_playlists = playlists.list_all_playlists(filters=args.filters)
+    all_playlists = playlists.list_all_playlists(filters=args.filters, sort_fields=args.sort_fields)
     print(f"{'PLAYLIST NAME':<32} {'SIZE':<6} {'OWNER':<16} DESCRIPTION")
     for playlist_row in all_playlists:
         print(f"""{truncate_long_value(playlist_row[FieldName.PLAYLIST_NAME], 32):<32} \

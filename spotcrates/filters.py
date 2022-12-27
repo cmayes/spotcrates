@@ -284,6 +284,7 @@ def parse_sorts(sorts: str) -> List[FieldSort]:
         elif exp_field_count == 2:
             parsed_sorts.append(FieldSort(stripped_exp[0], stripped_exp[1]))
 
+    return parsed_sorts
 
 def sort_list(items, sort_exp):
     parsed_sorts = parse_sorts(sort_exp)
