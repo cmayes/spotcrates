@@ -21,7 +21,7 @@ jobs:
         # Poetry 1.2.x wants Python 3.10
         python-version: ["3.10", "3.11"]
         poetry-version: ["1.2.2"]
-        os: [ubuntu-18.04, macos-latest, windows-latest]
+        os: [ubuntu-20.04, macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
