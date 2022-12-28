@@ -66,7 +66,9 @@ class FilterLookup:
         found_type = self.lookup.longest_prefix(type_name)
 
         if found_type:
-            self.logger.debug("Got %s (%s) for %s", found_type.value, found_type.key, type_name)
+            self.logger.debug(
+                "Got %s (%s) for %s", found_type.value, found_type.key, type_name
+            )
             found_val = found_type.value
             return found_val
         else:
@@ -84,14 +86,14 @@ class FilterLookup:
     @staticmethod
     def _init_lookup():
         lookup = pygtrie.CharTrie()
-        lookup['c'] = FilterType.CONTAINS
-        lookup['eq'] = FilterType.EQUALS
-        lookup['s'] = FilterType.STARTS
-        lookup['en'] = FilterType.ENDS
-        lookup['g'] = FilterType.GREATER
-        lookup['l'] = FilterType.LESS
-        lookup['ge'] = FilterType.GREATER_EQUAL
-        lookup['leq'] = FilterType.LESS_EQUAL
+        lookup["c"] = FilterType.CONTAINS
+        lookup["eq"] = FilterType.EQUALS
+        lookup["s"] = FilterType.STARTS
+        lookup["en"] = FilterType.ENDS
+        lookup["g"] = FilterType.GREATER
+        lookup["l"] = FilterType.LESS
+        lookup["ge"] = FilterType.GREATER_EQUAL
+        lookup["leq"] = FilterType.LESS_EQUAL
 
         return lookup
 
@@ -109,7 +111,9 @@ class FieldLookup:
         found_field = self.lookup.longest_prefix(field_name)
 
         if found_field:
-            self.logger.debug("Got %s (%s) for %s", found_field.value, found_field.key, field_name)
+            self.logger.debug(
+                "Got %s (%s) for %s", found_field.value, found_field.key, field_name
+            )
             found_val = found_field.value
             return found_val
         else:
@@ -127,17 +131,17 @@ class FieldLookup:
     @staticmethod
     def _init_lookup():
         lookup = pygtrie.CharTrie()
-        lookup['n'] = FieldName.PLAYLIST_NAME
-        lookup['p'] = FieldName.PLAYLIST_NAME
-        lookup['pl'] = FieldName.PLAYLIST_NAME
-        lookup['pn'] = FieldName.PLAYLIST_NAME
-        lookup['s'] = FieldName.SIZE
-        lookup['ps'] = FieldName.SIZE
-        lookup['d'] = FieldName.PLAYLIST_DESCRIPTION
-        lookup['pd'] = FieldName.PLAYLIST_DESCRIPTION
-        lookup['c'] = FieldName.SIZE
-        lookup['s'] = FieldName.SIZE
-        lookup['o'] = FieldName.OWNER
+        lookup["n"] = FieldName.PLAYLIST_NAME
+        lookup["p"] = FieldName.PLAYLIST_NAME
+        lookup["pl"] = FieldName.PLAYLIST_NAME
+        lookup["pn"] = FieldName.PLAYLIST_NAME
+        lookup["s"] = FieldName.SIZE
+        lookup["ps"] = FieldName.SIZE
+        lookup["d"] = FieldName.PLAYLIST_DESCRIPTION
+        lookup["pd"] = FieldName.PLAYLIST_DESCRIPTION
+        lookup["c"] = FieldName.SIZE
+        lookup["s"] = FieldName.SIZE
+        lookup["o"] = FieldName.OWNER
 
         return lookup
 
@@ -158,8 +162,11 @@ class FieldFilter:
 
     def __eq__(self, other):
         if isinstance(other, FieldFilter):
-            return self.field == other.field and self.value == other.value \
+            return (
+                self.field == other.field
+                and self.value == other.value
                 and self.filter_type == other.filter_type
+            )
         return NotImplemented
 
 
@@ -173,7 +180,7 @@ def parse_filters(filters: str) -> Dict[FieldName, List[FieldFilter]]:
     :param filters: A str with a comma-separated list of filters
     :return: A map of field names to lower-case "contains" filter strings.
     """
-    parsed_filters = defaultdict(list)
+    parsed_filters: Dict[FieldName, List[FieldFilter]] = defaultdict(list)
 
     if not filters:
         return parsed_filters
@@ -185,13 +192,19 @@ def parse_filters(filters: str) -> Dict[FieldName, List[FieldFilter]]:
         exp_field_count = len(raw_exp)
 
         if exp_field_count < 2:
-            raise InvalidFilterException(f"Invalid filter expression {':'.join(raw_exp)}")
+            raise InvalidFilterException(
+                f"Invalid filter expression {':'.join(raw_exp)}"
+            )
 
         stripped_exp = [field.strip() for field in raw_exp]
         if exp_field_count == 2:
-            field_filter = FieldFilter(stripped_exp[0], FilterType.CONTAINS, stripped_exp[1])
+            field_filter = FieldFilter(
+                stripped_exp[0], FilterType.CONTAINS, stripped_exp[1]
+            )
         else:
-            field_filter = FieldFilter(stripped_exp[0], stripped_exp[1], stripped_exp[2])
+            field_filter = FieldFilter(
+                stripped_exp[0], stripped_exp[1], stripped_exp[2]
+            )
         parsed_filters[field_filter.field].append(field_filter)
 
     return parsed_filters
@@ -234,7 +247,9 @@ class SortLookup:
         found_sort = self.lookup.longest_prefix(sort_type)
 
         if found_sort:
-            self.logger.debug("Got %s (%s) for %s", found_sort.value, found_sort.key, sort_type)
+            self.logger.debug(
+                "Got %s (%s) for %s", found_sort.value, found_sort.key, sort_type
+            )
             found_val = found_sort.value
             return found_val
         else:
@@ -252,8 +267,8 @@ class SortLookup:
     @staticmethod
     def _init_lookup():
         lookup = pygtrie.CharTrie()
-        lookup['a'] = SortType.ASCENDING
-        lookup['d'] = SortType.DESCENDING
+        lookup["a"] = SortType.ASCENDING
+        lookup["d"] = SortType.DESCENDING
         return lookup
 
 
@@ -266,7 +281,7 @@ class FieldSort:
 
 
 def parse_sorts(sorts: str) -> List[FieldSort]:
-    parsed_sorts = []
+    parsed_sorts: List[FieldSort] = []
 
     if not sorts:
         return parsed_sorts
@@ -297,4 +312,8 @@ def sort_list(items, sort_exp):
 
     sorter = parsed_sorts[0]
 
-    return sorted(items, key=lambda d: d[sorter.field], reverse=sorter.sort_type == SortType.DESCENDING)
+    return sorted(
+        items,
+        key=lambda d: d[sorter.field],
+        reverse=sorter.sort_type == SortType.DESCENDING,
+    )

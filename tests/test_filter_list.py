@@ -33,7 +33,7 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue("Songs" in playlist[FieldName.PLAYLIST_NAME])
 
     def test_explicit_contains_caseless(self):
-        filtered_list = filter_list( PLAYLISTS, "pname:con:sOnGs")
+        filtered_list = filter_list(PLAYLISTS, "pname:con:sOnGs")
 
         self.assertEqual(2, len(filtered_list))
 
