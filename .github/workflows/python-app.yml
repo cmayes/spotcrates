@@ -50,7 +50,7 @@ jobs:
           poetry run coverage run -m pytest 
           poetry run coverage report -m
           poetry run coverage json
-      - name: "Upload coverage data"
+      - name: Upload coverage data
         uses: actions/upload-artifact@v3
         with:
           name: covdata
@@ -61,10 +61,10 @@ jobs:
     needs: tests
     runs-on: ubuntu-latest
     steps:
-      - name: "Check out the repo"
-        uses: "actions/checkout@v3"
-      - name: "Set up Python"
-        uses: "actions/setup-python@v2"
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
       - uses: Gr1N/setup-poetry@v8
@@ -77,16 +77,16 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install
-      - name: "Download coverage data"
+      - name: Download coverage data
         uses: actions/download-artifact@v3
         with:
           name: covdata
-      - name: "Combine"
+      - name: Combine
         run: |
           export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
-      - name: "Make badge"
+      - name: Make badge
         uses: schneegans/dynamic-badges-action@v1.6.0
         with:
           # GIST_TOKEN is a GitHub personal access token with scope "gist".
