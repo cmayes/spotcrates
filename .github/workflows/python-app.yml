@@ -5,23 +5,20 @@ name: Python application
 
 on:
   push:
-    branches: [ "playlist_lister", "trunk" ]
   pull_request:
-    branches: [ "playlist_lister", "trunk" ]
 
 permissions:
   contents: read
 
-
 jobs:
-  ci:
+  tests:
     strategy:
       fail-fast: false
       matrix:
         # Poetry 1.2.x wants Python 3.10
-        python-version: ["3.10", "3.11"]
-        poetry-version: ["1.2.2"]
-        os: [ubuntu-20.04, macos-latest, windows-latest, ubuntu-latest]
+        python-version: [ "3.10", "3.11" ]
+        poetry-version: [ "1.2.2" ]
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -30,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - uses: Gr1N/setup-poetry@v8
         with:
-          poetry-version:  ${{ matrix.poetry-version }}
+          poetry-version: ${{ matrix.poetry-version }}
       - uses: actions/cache@v3
         with:
           path: ~/.cache/pypoetry/virtualenvs
@@ -38,7 +35,6 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install
-          pip install flake8 pytest
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -52,3 +48,53 @@ jobs:
       - name: Test and coverage with pytest
         run: |
           poetry run coverage run -m pytest && poetry run coverage report -m
+      - name: "Upload coverage data"
+        uses: actions/upload-artifact@v3
+        with:
+          name: covdata
+          path: .coverage.*
+
+  coverage:
+    name: Coverage
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out the repo"
+        uses: "actions/checkout@v3"
+      - name: "Set up Python"
+        uses: "actions/setup-python@v2"
+        with:
+          python-version: "3.11"
+      - uses: Gr1N/setup-poetry@v8
+        with:
+          poetry-version: "1.2.2"
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+      - name: Install dependencies
+        run: |
+          poetry install
+      - name: "Download coverage data"
+        uses: actions/download-artifact@v3
+        with:
+          name: covdata
+      - name: "Combine"
+        run: |
+          poetry coverage
+          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "total=$TOTAL" >> $GITHUB_ENV
+          echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
+          
+          - name: "Make badge"
+            uses: schneegans/dynamic-badges-action@v1.6.0
+            with:
+              # GIST_TOKEN is a GitHub personal access token with scope "gist".
+              auth: ${{ secrets.GIST_TOKEN }}
+              gistID: 3c8214e2bd942821496440b93acd3582
+              filename: covbadge.json
+              label: Coverage
+              message: ${{ env.total }}%
+              minColorRange: 50
+              maxColorRange: 90
+              valColorRange: ${{ env.total }}
