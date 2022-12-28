@@ -47,7 +47,11 @@ jobs:
         run: poetry run black --check .
       - name: Test and coverage with pytest
         run: |
-          poetry run coverage run -m pytest && poetry run coverage report -m
+          poetry run coverage run -m pytest 
+          poetry run coverage combine
+          poetry run coverage report -m
+          poetry run coverage json
+          ls -ltrha
       - name: "Upload coverage data"
         uses: actions/upload-artifact@v3
         with:
