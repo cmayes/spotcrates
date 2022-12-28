@@ -4,8 +4,8 @@ import unittest
 from spotcrates.filters import filter_list, FieldName, sort_list
 from tests.utils import load_playlist_listing_file
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
-PLAYLISTS = load_playlist_listing_file(os.path.join(DATA_DIR, 'playlists.json'))
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+PLAYLISTS = load_playlist_listing_file(os.path.join(DATA_DIR, "playlists.json"))
 
 
 class FilterListTestCase(unittest.TestCase):
@@ -62,7 +62,9 @@ class FilterListTestCase(unittest.TestCase):
         self.assertEqual(1, len(filtered_list))
 
         for playlist in filtered_list:
-            self.assertTrue(str(playlist[FieldName.PLAYLIST_DESCRIPTION]).endswith("more"))
+            self.assertTrue(
+                str(playlist[FieldName.PLAYLIST_DESCRIPTION]).endswith("more")
+            )
 
     def test_greater(self):
         filtered_list = filter_list(PLAYLISTS, "size:greater:300")
@@ -112,9 +114,13 @@ class SortListTestCase(unittest.TestCase):
         self.assertEqual(asc_name_sorted, sort_list(PLAYLISTS, "name"))
 
     def test_name_sort_descending(self):
-        desc_name_sorted = sorted(PLAYLISTS, key=lambda d: d[FieldName.PLAYLIST_NAME], reverse=True)
+        desc_name_sorted = sorted(
+            PLAYLISTS, key=lambda d: d[FieldName.PLAYLIST_NAME], reverse=True
+        )
         self.assertEqual(desc_name_sorted, sort_list(PLAYLISTS, "name:descending"))
 
     def test_count_desc_multi(self):
-        desc_count_sorted = sorted(PLAYLISTS, key=lambda d: d[FieldName.SIZE], reverse=True)
+        desc_count_sorted = sorted(
+            PLAYLISTS, key=lambda d: d[FieldName.SIZE], reverse=True
+        )
         self.assertEqual(desc_count_sorted, sort_list(PLAYLISTS, "count:desc,name"))
