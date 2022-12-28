@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from spotcrates.filters import filter_list, FieldName
+from spotcrates.filters import filter_list, FieldName, sort_list
 from tests.utils import load_playlist_listing_file
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
@@ -33,9 +33,7 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue("Songs" in playlist[FieldName.PLAYLIST_NAME])
 
     def test_explicit_contains_caseless(self):
-        playlists = PLAYLISTS
-        # filters: Dict[FieldName, List[FieldFilter]]
-        filtered_list = filter_list(playlists, "pname:con:sOnGs")
+        filtered_list = filter_list( PLAYLISTS, "pname:con:sOnGs")
 
         self.assertEqual(2, len(filtered_list))
 
@@ -43,9 +41,7 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue("Songs" in playlist[FieldName.PLAYLIST_NAME])
 
     def test_equals(self):
-        playlists = PLAYLISTS
-        # filters: Dict[FieldName, List[FieldFilter]]
-        filtered_list = filter_list(playlists, "na:eq:Now")
+        filtered_list = filter_list(PLAYLISTS, "na:eq:Now")
 
         self.assertEqual(1, len(filtered_list))
 
@@ -53,9 +49,7 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue("Now" == playlist[FieldName.PLAYLIST_NAME])
 
     def test_starts(self):
-        playlists = PLAYLISTS
-        # filters: Dict[FieldName, List[FieldFilter]]
-        filtered_list = filter_list(playlists, "na:sta:your")
+        filtered_list = filter_list(PLAYLISTS, "na:sta:your")
 
         self.assertEqual(2, len(filtered_list))
 
@@ -63,9 +57,7 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue(str(playlist[FieldName.PLAYLIST_NAME]).startswith("Your"))
 
     def test_ends(self):
-        playlists = PLAYLISTS
-        # filters: Dict[FieldName, List[FieldFilter]]
-        filtered_list = filter_list(playlists, "desc:ends:MoRe")
+        filtered_list = filter_list(PLAYLISTS, "desc:ends:MoRe")
 
         self.assertEqual(1, len(filtered_list))
 
@@ -73,9 +65,7 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue(str(playlist[FieldName.PLAYLIST_DESCRIPTION]).endswith("more"))
 
     def test_greater(self):
-        playlists = PLAYLISTS
-        # filters: Dict[FieldName, List[FieldFilter]]
-        filtered_list = filter_list(playlists, "size:greater:300")
+        filtered_list = filter_list(PLAYLISTS, "size:greater:300")
 
         self.assertEqual(2, len(filtered_list))
 
@@ -83,9 +73,7 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue(int(playlist[FieldName.SIZE]) > 300)
 
     def test_less(self):
-        playlists = PLAYLISTS
-        # filters: Dict[FieldName, List[FieldFilter]]
-        filtered_list = filter_list(playlists, "size:lt:300")
+        filtered_list = filter_list(PLAYLISTS, "size:lt:300")
 
         self.assertEqual(4, len(filtered_list))
 
@@ -93,9 +81,7 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue(int(playlist[FieldName.SIZE]) < 300)
 
     def test_greater_equal(self):
-        playlists = PLAYLISTS
-        # filters: Dict[FieldName, List[FieldFilter]]
-        filtered_list = filter_list(playlists, "size:geq:101")
+        filtered_list = filter_list(PLAYLISTS, "size:geq:101")
 
         self.assertEqual(3, len(filtered_list))
 
@@ -103,11 +89,32 @@ class FilterListTestCase(unittest.TestCase):
             self.assertTrue(int(playlist[FieldName.SIZE]) >= 101)
 
     def test_less_equal(self):
-        playlists = PLAYLISTS
-        # filters: Dict[FieldName, List[FieldFilter]]
-        filtered_list = filter_list(playlists, "size:leq:100")
+        filtered_list = filter_list(PLAYLISTS, "size:leq:100")
 
         self.assertEqual(3, len(filtered_list))
 
         for playlist in filtered_list:
             self.assertTrue(int(playlist[FieldName.SIZE]) <= 100)
+
+
+class SortListTestCase(unittest.TestCase):
+    playlists = PLAYLISTS
+
+    # sort_list
+    def test_blank_filter(self):
+        self.assertEqual(PLAYLISTS, sort_list(PLAYLISTS, ""))
+
+    def test_null_filter(self):
+        self.assertEqual(PLAYLISTS, sort_list(PLAYLISTS, None))
+
+    def test_name_sort(self):
+        asc_name_sorted = sorted(PLAYLISTS, key=lambda d: d[FieldName.PLAYLIST_NAME])
+        self.assertEqual(asc_name_sorted, sort_list(PLAYLISTS, "name"))
+
+    def test_name_sort_descending(self):
+        desc_name_sorted = sorted(PLAYLISTS, key=lambda d: d[FieldName.PLAYLIST_NAME], reverse=True)
+        self.assertEqual(desc_name_sorted, sort_list(PLAYLISTS, "name:descending"))
+
+    def test_count_desc_multi(self):
+        desc_count_sorted = sorted(PLAYLISTS, key=lambda d: d[FieldName.SIZE], reverse=True)
+        self.assertEqual(desc_count_sorted, sort_list(PLAYLISTS, "count:desc,name"))

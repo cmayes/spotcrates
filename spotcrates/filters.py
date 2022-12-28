@@ -285,6 +285,7 @@ def parse_sorts(sorts: str) -> List[FieldSort]:
 
     return parsed_sorts
 
+
 def sort_list(items, sort_exp):
     parsed_sorts = parse_sorts(sort_exp)
 
