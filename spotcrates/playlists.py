@@ -1,14 +1,15 @@
 import logging
-from typing import List, Set, Dict
+from typing import List, Set, Dict, Optional
 
 from spotipy import Spotify
 
-from spotcrates.common import batched
+from spotcrates.common import batched, get_all_items
+from spotcrates.filters import FieldName, filter_list, sort_list
 
 config_defaults = {
-    'daily_mix_prefix': 'Daily Mix',
-    'daily_mix_target': 'Now',
-    'daily_mix_excludes': 'Overplayed'
+    "daily_mix_prefix": "Daily Mix",
+    "daily_mix_target": "Now",
+    "daily_mix_excludes": "Overplayed",
 }
 
 
@@ -17,7 +18,7 @@ class PlaylistException(Exception):
 
 
 class Playlists:
-    def __init__(self, spotify: Spotify, config: Dict = None):
+    def __init__(self, spotify: Spotify, config: Optional[Dict] = None):
         self.spotify = spotify
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -25,16 +26,31 @@ class Playlists:
         self.config = self._process_config(config)
 
     def get_all_playlists(self) -> List[Dict]:
-        all_lists = []
-        first_page = self.spotify.current_user_playlists()
-        all_lists.extend(first_page['items'])
+        return get_all_items(self.spotify, self.spotify.current_user_playlists())
 
-        next_page = self.spotify.next(first_page)
-        while next_page:
-            all_lists.extend(next_page['items'])
-            next_page = self.spotify.next(next_page)
+    def list_all_playlists(self, sort_fields=None, filters=None) -> List[Dict]:
+        playlist_entries = []
+        for playlist in self.get_all_playlists():
+            playlist_entries.append(
+                {
+                    FieldName.PLAYLIST_NAME: playlist["name"],
+                    FieldName.SIZE: playlist["tracks"]["total"],
+                    FieldName.OWNER: playlist["owner"]["id"],
+                    FieldName.PLAYLIST_DESCRIPTION: playlist["description"],
+                }
+            )
 
-        return all_lists
+        if not sort_fields and not filters:
+            return playlist_entries
+
+        processed_entries = playlist_entries
+        if filters:
+            processed_entries = filter_list(processed_entries, filters)
+
+        if sort_fields:
+            processed_entries = sort_list(processed_entries, sort_fields)
+
+        return processed_entries
 
     def append_daily_mix(self):
         dailies = []
@@ -44,7 +60,7 @@ class Playlists:
         daily_mix_target = self.config.get("daily_mix_target")
         daily_mix_excludes = self.config.get("daily_mix_excludes")
         for playlist in self.get_all_playlists():
-            list_name = playlist['name']
+            list_name = playlist["name"]
             if list_name:
                 if list_name.startswith(daily_mix_prefix):
                     dailies.append(playlist)
@@ -57,11 +73,15 @@ class Playlists:
         if not target_list:
             me = self.spotify.me()
 
-            target_list = self.spotify.user_playlist_create(me['id'], daily_mix_target, public=False)
+            target_list = self.spotify.user_playlist_create(
+                me["id"], daily_mix_target, public=False
+            )
 
         # user_playlist_add_tracks(user, playlist_id, tracks, position=None)
         if not dailies:
-            self.logger.warning(f"No daily mixes found with the prefix '{daily_mix_prefix}'")
+            self.logger.warning(
+                f"No daily mixes found with the prefix '{daily_mix_prefix}'"
+            )
 
         exclude_ids = self._get_playlist_track_ids(target_list["id"])
 
@@ -74,9 +94,16 @@ class Playlists:
             daily_items = self._get_playlist_tracks(daily["id"])
             orig_daily_count += len(daily_items)
             add_tracks.extend(
-                [daily_item for daily_item in daily_items if daily_item['track']['id'] not in exclude_ids])
+                [
+                    daily_item
+                    for daily_item in daily_items
+                    if daily_item["track"]["id"] not in exclude_ids
+                ]
+            )
 
-        self.logger.info(f"{len(add_tracks)} to add from an original count of {orig_daily_count}")
+        self.logger.info(
+            f"{len(add_tracks)} to add from an original count of {orig_daily_count}"
+        )
         if add_tracks:
             self._add_tracks_to_playlist(target_list, add_tracks)
         else:
@@ -86,14 +113,12 @@ class Playlists:
         track_ids = set()
         for playlist_id in args:
             # TODO: See about paring down to just the ID via "fields" param
-            playlist_items = self.spotify.playlist_items(playlist_id)
-
-            track_ids.update({playlist_item['track']['id'] for playlist_item in playlist_items['items']})
-
-            next_playlist_page = self.spotify.next(playlist_items)
-            while next_playlist_page:
-                track_ids.update({playlist_item['track']['id'] for playlist_item in next_playlist_page['items']})
-                next_playlist_page = self.spotify.next(next_playlist_page)
+            playlist_items = get_all_items(
+                self.spotify, self.spotify.playlist_items(playlist_id)
+            )
+            track_ids.update(
+                {playlist_item["track"]["id"] for playlist_item in playlist_items}
+            )
 
         return track_ids
 
@@ -101,24 +126,21 @@ class Playlists:
         tracks = []
         for playlist_id in args:
             # TODO: See about paring down to just the ID via "fields" param
-            playlist_items = self.spotify.playlist_items(playlist_id)
-            tracks.extend(playlist_items['items'])
-
-            next_playlist_page = self.spotify.next(playlist_items)
-            while next_playlist_page:
-                tracks.extend(next_playlist_page['items'])
-                next_playlist_page = self.spotify.next(next_playlist_page)
+            tracks.extend(
+                get_all_items(self.spotify, self.spotify.playlist_items(playlist_id))
+            )
 
         return tracks
 
     def _add_tracks_to_playlist(self, target_list, add_tracks):
-        track_ids = {add_song['track']['id'] for add_song in add_tracks}
+        track_ids = {add_song["track"]["id"] for add_song in add_tracks}
 
         for id_batch in batched(track_ids, 100):
             self.logger.debug(f"Batch size: {len(id_batch)}")
             self.spotify.playlist_add_items(target_list["id"], id_batch)
 
-    def _process_config(self, config: Dict) -> Dict:
+    @staticmethod
+    def _process_config(config: Optional[Dict]) -> Dict:
         processed_config = {}
 
         source_config = {}
