@@ -13,6 +13,7 @@ def load_playlist_listing_file(file_loc):
     playlist_entries = []
     for playlist in raw_data:
         desc_entry = {
+            FieldName.SPOTIFY_ID: playlist["id"],
             FieldName.PLAYLIST_NAME: playlist["name"],
             FieldName.SIZE: playlist["tracks"]["total"],
             FieldName.OWNER: playlist["owner"]["id"],

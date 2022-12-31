@@ -47,10 +47,19 @@ class FilterType(Enum):
 
 
 class FieldName(Enum):
+    SPOTIFY_ID = auto()
     PLAYLIST_NAME = auto()
     SIZE = auto()
     OWNER = auto()
     PLAYLIST_DESCRIPTION = auto()
+    ALL = auto()
+
+    @staticmethod
+    def list_regular_fields():
+        for field in FieldName:
+            if field == FieldName.ALL:
+                continue
+            yield field
 
 
 class FilterLookup:
@@ -142,6 +151,7 @@ class FieldLookup:
         lookup["c"] = FieldName.SIZE
         lookup["s"] = FieldName.SIZE
         lookup["o"] = FieldName.OWNER
+        lookup["a"] = FieldName.ALL
 
         return lookup
 
@@ -163,9 +173,9 @@ class FieldFilter:
     def __eq__(self, other):
         if isinstance(other, FieldFilter):
             return (
-                self.field == other.field
-                and self.value == other.value
-                and self.filter_type == other.filter_type
+                    self.field == other.field
+                    and self.value == other.value
+                    and self.filter_type == other.filter_type
             )
         return NotImplemented
 
@@ -191,13 +201,18 @@ def parse_filters(filters: str) -> Dict[FieldName, List[FieldFilter]]:
     for raw_exp in split_raw_filters:
         exp_field_count = len(raw_exp)
 
-        if exp_field_count < 2:
+        if exp_field_count < 1:
             raise InvalidFilterException(
                 f"Invalid filter expression {':'.join(raw_exp)}"
             )
 
         stripped_exp = [field.strip() for field in raw_exp]
-        if exp_field_count == 2:
+
+        if exp_field_count == 1:
+            field_filter = FieldFilter(
+                FieldName.ALL, FilterType.CONTAINS, stripped_exp[0]
+            )
+        elif exp_field_count == 2:
             field_filter = FieldFilter(
                 stripped_exp[0], FilterType.CONTAINS, stripped_exp[1]
             )
@@ -221,10 +236,17 @@ def filter_list(items, filters):
             for cur_filter in field_filters:
                 matching_items = []
                 for cur_item in filtered_items:
-                    item_field = cur_item.get(field)
-                    if cur_filter.passes(item_field):
-                        matching_items.append(cur_item)
-                filtered_items = matching_items
+                    if FieldName.ALL == field:
+                        for regular_field in FieldName.list_regular_fields():
+                            item_field = cur_item.get(regular_field)
+                            if cur_filter.passes(item_field):
+                                matching_items.append(cur_item)
+                    else:
+                        item_field = cur_item.get(field)
+                        if cur_filter.passes(item_field):
+                            matching_items.append(cur_item)
+
+                filtered_items = list({v[FieldName.SPOTIFY_ID]: v for v in matching_items}.values())
 
     return filtered_items
 
@@ -269,6 +291,7 @@ class SortLookup:
         lookup = pygtrie.CharTrie()
         lookup["a"] = SortType.ASCENDING
         lookup["d"] = SortType.DESCENDING
+        lookup["r"] = SortType.DESCENDING
         return lookup
 
 

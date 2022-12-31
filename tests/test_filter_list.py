@@ -119,6 +119,12 @@ class SortListTestCase(unittest.TestCase):
         )
         self.assertEqual(desc_name_sorted, sort_list(PLAYLISTS, "name:descending"))
 
+    def test_name_sort_reverse(self):
+        desc_name_sorted = sorted(
+            PLAYLISTS, key=lambda d: d[FieldName.PLAYLIST_NAME], reverse=True
+        )
+        self.assertEqual(desc_name_sorted, sort_list(PLAYLISTS, "name:reverse"))
+
     def test_count_desc_multi(self):
         desc_count_sorted = sorted(
             PLAYLISTS, key=lambda d: d[FieldName.SIZE], reverse=True
