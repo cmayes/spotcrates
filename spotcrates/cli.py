@@ -96,9 +96,15 @@ def append_daily_mix(config):
 def list_playlists(config, args):
     sp = get_spotify_handle(config)
     playlists = Playlists(sp, config.get("playlists"))
-    all_playlists = playlists.list_all_playlists(
-        filters=args.filters, sort_fields=args.sort_fields
-    )
+
+    try:
+        all_playlists = playlists.list_all_playlists(
+            filters=args.filters, sort_fields=args.sort_fields
+        )
+    except Exception as e:
+        logger.warning(f"Problems listing playlists: {e}")
+        return 1
+
     print(f"{'PLAYLIST NAME':<32} {'SIZE':<6} {'OWNER':<16} DESCRIPTION")
     for playlist_row in all_playlists:
         print(
@@ -153,18 +159,16 @@ def main(argv=None):
     command = args.command.lower()
 
     if command == "daily":
-        append_daily_mix(config)
+        return append_daily_mix(config)
     elif command == "list-playlists":
-        list_playlists(config, args)
+        return list_playlists(config, args)
     elif command == "commands":
-        print_commands()
+        return print_commands()
     else:
         print(
             f"Invalid command '{args.command}'.  Valid commands: {','.join(COMMANDS)}"
         )
         return 1
-
-    return 0  # success
 
 
 if __name__ == "__main__":

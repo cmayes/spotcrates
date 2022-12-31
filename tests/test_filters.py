@@ -8,7 +8,6 @@ from spotcrates.filters import (
     FieldName,
     parse_filters,
     FieldFilter,
-    InvalidFilterException,
 )
 
 
@@ -62,18 +61,6 @@ class FilterLookupTestCase(unittest.TestCase):
 class FieldNameTestCase(unittest.TestCase):
     def setUp(self):
         self.lookup = FieldLookup()
-
-    # PLAYLIST NAME                    SIZE   OWNER            DESCRIPTION
-    #
-    #         lookup['n'] = FieldName.PLAYLIST_NAME
-    #         lookup['p'] = FieldName.PLAYLIST_NAME
-    #         lookup['pl'] = FieldName.PLAYLIST_NAME
-    #         lookup['pn'] = FieldName.PLAYLIST_NAME
-    #         lookup['s'] = FieldName.SIZE
-    #         lookup['ps'] = FieldName.SIZE
-    #         lookup['d'] = FieldName.PLAYLIST_DESCRIPTION
-    #         lookup['pd'] = FieldName.PLAYLIST_DESCRIPTION
-    #         lookup['o'] = FieldName.OWNER
 
     def test_name(self):
         self.assertEqual(FieldName.PLAYLIST_NAME, self.lookup.find("name"))
@@ -176,6 +163,26 @@ class ParseFiltersTestCase(unittest.TestCase):
             FieldFilter(FieldName.SIZE, FilterType.LESS, "1234"), second_size_filter
         )
 
+    def test_implicit_all(self):
+        filters = parse_filters("filterval")
+        desc_filters = filters.get(FieldName.ALL)
+        self.assertEqual(1, len(desc_filters))
+        first_filter = desc_filters[0]
+        self.assertEqual(
+            FieldFilter(FieldName.ALL, FilterType.CONTAINS, "filterval"),
+            first_filter,
+        )
+
+    def test_explicit_all(self):
+        filters = parse_filters("all:st:filterval")
+        desc_filters = filters.get(FieldName.ALL)
+        self.assertEqual(1, len(desc_filters))
+        first_filter = desc_filters[0]
+        self.assertEqual(
+            FieldFilter(FieldName.ALL, FilterType.STARTS, "filterval"),
+            first_filter,
+        )
+
     def test_invalid_field(self):
         with self.assertRaises(NotFoundException):
             parse_filters("zzz:testuser")
@@ -186,10 +193,6 @@ class ParseFiltersTestCase(unittest.TestCase):
 
     def test_empty_filter(self):
         self.assertEqual({}, parse_filters(""))
-
-    def test_single_element_filter(self):
-        with self.assertRaises(InvalidFilterException):
-            parse_filters("invalid")
 
     def test_null_filter(self):
         self.assertEqual({}, parse_filters(None))

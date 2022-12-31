@@ -33,6 +33,7 @@ class Playlists:
         for playlist in self.get_all_playlists():
             playlist_entries.append(
                 {
+                    FieldName.SPOTIFY_ID: playlist["id"],
                     FieldName.PLAYLIST_NAME: playlist["name"],
                     FieldName.SIZE: playlist["tracks"]["total"],
                     FieldName.OWNER: playlist["owner"]["id"],
