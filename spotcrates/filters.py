@@ -173,9 +173,9 @@ class FieldFilter:
     def __eq__(self, other):
         if isinstance(other, FieldFilter):
             return (
-                    self.field == other.field
-                    and self.value == other.value
-                    and self.filter_type == other.filter_type
+                self.field == other.field
+                and self.value == other.value
+                and self.filter_type == other.filter_type
             )
         return NotImplemented
 
@@ -246,7 +246,9 @@ def filter_list(items, filters):
                         if cur_filter.passes(item_field):
                             matching_items.append(cur_item)
 
-                filtered_items = list({v[FieldName.SPOTIFY_ID]: v for v in matching_items}.values())
+                filtered_items = list(
+                    {v[FieldName.SPOTIFY_ID]: v for v in matching_items}.values()
+                )
 
     return filtered_items
 

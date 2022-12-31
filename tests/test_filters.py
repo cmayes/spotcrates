@@ -183,7 +183,6 @@ class ParseFiltersTestCase(unittest.TestCase):
             first_filter,
         )
 
-
     def test_invalid_field(self):
         with self.assertRaises(NotFoundException):
             parse_filters("zzz:testuser")
