@@ -9,21 +9,25 @@ class Base(DeclarativeBase):
 
 
 class Playlist(Base):
+    __tablename__ = "playlist"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(1024))
     description: Mapped[str] = mapped_column(Text())
     images: Mapped[list["PlaylistImage"]] = relationship(back_populates="playlist")
-    is_public: Mapped[bool] = mapped_column(Boolean()),
-    owner: Mapped[str] = mapped_column(String(255)),
+    is_public: Mapped[bool] = mapped_column(Boolean())
+    owner: Mapped[str] = mapped_column(String(255))
     # might be useful for refreshes: does this stay the same if there are no changes?
-    snapshot_id: Mapped[str] = mapped_column(String(100)),
-    spotify_id: Mapped[str] = mapped_column(String(50)),
+    snapshot_id: Mapped[str] = mapped_column(String(100))
+    spotify_id: Mapped[str] = mapped_column(String(50))
     tracks_count: Mapped[int] = mapped_column(Integer)
     tracks_link: Mapped[str] = mapped_column(Text())
     tracks: Mapped[list["PlaylistTrack"]] = relationship(back_populates="playlist")
 
 
 class PlaylistImage(Base):
+    __tablename__ = "playlist_image"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     height: Mapped[int] = mapped_column(Integer)
     width: Mapped[int] = mapped_column(Integer)
@@ -32,6 +36,8 @@ class PlaylistImage(Base):
 
 
 class PlaylistTrack(Base):
+    __tablename__ = "playlist_track"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     added_at: Mapped[datetime.datetime] = mapped_column(DateTime)
     added_by: Mapped[str] = mapped_column(String(255))
@@ -40,13 +46,15 @@ class PlaylistTrack(Base):
 
 
 class Album(Base):
+    __tablename__ = "album"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     added_at: Mapped[datetime.datetime] = mapped_column(DateTime)
     name: Mapped[str] = mapped_column(String(1024))
     # International Standard Recording Code
-    isrc: Mapped[str] = mapped_column(String(50)),
+    isrc: Mapped[str] = mapped_column(String(50))
     release_date: Mapped[datetime.date] = mapped_column(Date)
-    spotify_id: Mapped[str] = mapped_column(String(50)),
+    spotify_id: Mapped[str] = mapped_column(String(50))
     tracks_count: Mapped[int] = mapped_column(Integer)
     # Is this ever not "album?"
     album_type: Mapped[str] = mapped_column(String(30))
@@ -57,6 +65,8 @@ class Album(Base):
 
 
 class AlbumImage(Base):
+    __tablename__ = "album_image"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     height: Mapped[int] = mapped_column(Integer)
     width: Mapped[int] = mapped_column(Integer)
@@ -65,6 +75,8 @@ class AlbumImage(Base):
 
 
 class AlbumTrack(Base):
+    __tablename__ = "album_track"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     # album link
     disc_number: Mapped[int] = mapped_column(Integer)
@@ -72,7 +84,7 @@ class AlbumTrack(Base):
     # International Standard Recording Code
     isrc: Mapped[str] = mapped_column(String(30))
     popularity: Mapped[int] = mapped_column(Integer)
-    spotify_id: Mapped[str] = mapped_column(String(50)),
+    spotify_id: Mapped[str] = mapped_column(String(50))
     track_number: Mapped[int] = mapped_column(Integer)
     # Is this ever not "track?"
     track_type: Mapped[str] = mapped_column(String(30))
@@ -82,12 +94,14 @@ class AlbumTrack(Base):
 
 
 class Artist(Base):
+    __tablename__ = "artist"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     added_at: Mapped[datetime.datetime] = mapped_column(DateTime)
     # one-to-many (maybe many-to-many)
     # self.images
     name: Mapped[str] = mapped_column(String(1024))
-    spotify_id: Mapped[str] = mapped_column(String(50)),
+    spotify_id: Mapped[str] = mapped_column(String(50))
     # Is this ever not "artist?"
     artist_type: Mapped[str] = mapped_column(String(30))
     albums: Mapped[list["Album"]] = relationship(back_populates="artist")
