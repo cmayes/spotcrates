@@ -9,7 +9,7 @@ from spotcrates.filters import FieldName, filter_list, sort_list
 config_defaults = {
     "daily_mix_prefix": "Daily Mix",
     "daily_mix_target": "Now",
-    "daily_mix_excludes": "Overplayed",
+    "daily_mix_exclude_prefix": "Overplayed",
 }
 
 
@@ -56,10 +56,10 @@ class Playlists:
     def append_daily_mix(self):
         dailies = []
         target_list = None
-        exclude_list = None
+        exclude_lists = []
         daily_mix_prefix = self.config.get("daily_mix_prefix")
         daily_mix_target = self.config.get("daily_mix_target")
-        daily_mix_excludes = self.config.get("daily_mix_excludes")
+        daily_mix_exclude_prefix = self.config.get("daily_mix_exclude_prefix")
         for playlist in self.get_all_playlists():
             list_name = playlist["name"]
             if list_name:
@@ -67,8 +67,8 @@ class Playlists:
                     dailies.append(playlist)
                 elif list_name == daily_mix_target:
                     target_list = playlist
-                elif list_name == daily_mix_excludes:
-                    exclude_list = playlist
+                elif list_name.startswith(daily_mix_exclude_prefix):
+                    exclude_lists.append(playlist)
 
         # TODO: Optionally create if it doesn't exist
         if not target_list:
@@ -86,7 +86,7 @@ class Playlists:
 
         exclude_ids = self._get_playlist_track_ids(target_list["id"])
 
-        if exclude_list:
+        for exclude_list in exclude_lists:
             exclude_ids.update(self._get_playlist_track_ids(exclude_list["id"]))
 
         add_tracks = []
