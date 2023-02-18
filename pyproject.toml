@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "spotcrates"
-version = "0.3.1"
+version = "0.4.0"
 description = ""
 authors = ["Chris Mayes <cmayes@cmay.es>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-flask = "^2.2.2"
+flask = "^2.2.3"
 jinja2 = "^3.1.2"
-spotipy = "^2.22.0"
+spotipy = "^2.22.1"
 flask-session = "^0.4.0"
 appdirs = "^1.4.4"
 pygtrie = "^2.5.0"
