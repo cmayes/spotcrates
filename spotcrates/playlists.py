@@ -109,6 +109,19 @@ class Playlists:
         else:
             self.logger.warning("No daily songs to add")
 
+    def save_playlists(self):
+        for playlist in self.get_all_playlists():
+            self.save_playlist(playlist)
+            # save base playlist
+            # spider out to artist
+            # save artist
+            # save album
+            # save playlist track
+
+    def save_playlist(self, playlist):
+
+        pass
+
     def _get_playlist_track_ids(self, *args: str) -> Set[str]:
         track_ids = set()
         for playlist_id in args:

@@ -105,3 +105,9 @@ class Artist(Base):
     # Is this ever not "artist?"
     artist_type: Mapped[str] = mapped_column(String(30))
     albums: Mapped[list["Album"]] = relationship(back_populates="artist")
+
+class MusicManager:
+    def __init__(self):
+        pass
+
+
