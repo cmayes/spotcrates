@@ -34,7 +34,7 @@ DEFAULT_CACHE_DIR = user_cache_dir("spotcrates")
 DEFAULT_AUTH_CACHE_FILE = Path(DEFAULT_CACHE_DIR, "spotcrates_auth_cache")
 DEFAULT_AUTH_SCOPES = ["playlist-modify-private", "playlist-read-private"]
 
-COMMANDS = ["daily", "list-playlists", "commands"]
+COMMANDS = ["daily", "list-playlists", "subscriptions", "commands"]
 
 COMMAND_DESCRIPTION = f"""
 {'COMMAND NAME':<16} DESCRIPTION
@@ -93,6 +93,13 @@ def append_daily_mix(config):
     playlists.append_daily_mix()
 
 
+def append_recent_subscriptions(config):
+    sp = get_spotify_handle(config)
+
+    playlists = Playlists(sp, config.get("subscriptions"))
+    playlists.append_recent_subscriptions()
+
+
 def list_playlists(config, args):
     sp = get_spotify_handle(config)
     playlists = Playlists(sp, config.get("playlists"))
@@ -105,11 +112,12 @@ def list_playlists(config, args):
         logger.warning(f"Problems listing playlists: {e}")
         return 1
 
-    print(f"{'PLAYLIST NAME':<32} {'SIZE':<6} {'OWNER':<16} DESCRIPTION")
+    print(f"{'PLAYLIST NAME':<32} {'SIZE':<5} {'ID':<24} {'OWNER':<16} DESCRIPTION")
     for playlist_row in all_playlists:
         print(
             f"""{truncate_long_value(playlist_row[FieldName.PLAYLIST_NAME], 32):<32} \
-{playlist_row[FieldName.SIZE]:<6} \
+{playlist_row[FieldName.SIZE]:<5} \
+{playlist_row[FieldName.SPOTIFY_ID]:<24} \
 {truncate_long_value(playlist_row[FieldName.OWNER], 16):<16} \
 {truncate_long_value(playlist_row[FieldName.PLAYLIST_DESCRIPTION], 75)}"""
         )
@@ -127,7 +135,7 @@ def parse_cmdline(argv):
     parser.add_argument(
         "-c",
         "--config_file",
-        help="The location of the config file",
+        help=f"The location of the config file (default: {DEFAULT_CONFIG_FILE})",
         default=DEFAULT_CONFIG_FILE,
         type=Path,
     )
@@ -158,10 +166,14 @@ def main(argv=None):
     config = get_config(args.config_file)
     command = args.command.lower()
 
+    # TODO: Add trie for commands
+
     if command == "daily":
         return append_daily_mix(config)
     elif command == "list-playlists":
         return list_playlists(config, args)
+    elif command == "subscriptions":
+        return append_recent_subscriptions(config)
     elif command == "commands":
         return print_commands()
     else:

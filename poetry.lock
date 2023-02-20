@@ -108,6 +108,14 @@ tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.1
 toml = ["tomli"]
 
 [[package]]
+name = "durations-nlp"
+version = "1.0.1"
+description = "A python durations parsing library."
+category = "main"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[[package]]
 name = "exceptiongroup"
 version = "1.1.0"
 description = "Backport of PEP 654 (exception groups)"
@@ -454,7 +462,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "40d44b436cf0b7d6f1ca0cc52169434ba48d641c976150d44cba4acf3d66d3c1"
+content-hash = "5d9ec955d13a45f1349643c67a41a40c8850b50c0d5aef96b74b4bb1392b5ee3"
 
 [metadata.files]
 appdirs = [
@@ -641,6 +649,10 @@ coverage = [
     {file = "coverage-7.1.0-cp39-cp39-win_amd64.whl", hash = "sha256:7ed681b0f8e8bcbbffa58ba26fcf5dbc8f79e7997595bf071ed5430d8c08d6f3"},
     {file = "coverage-7.1.0-pp37.pp38.pp39-none-any.whl", hash = "sha256:755e89e32376c850f826c425ece2c35a4fc266c081490eb0a841e7c1cb0d3bda"},
     {file = "coverage-7.1.0.tar.gz", hash = "sha256:10188fe543560ec4874f974b5305cd1a8bdcfa885ee00ea3a03733464c4ca265"},
+]
+durations-nlp = [
+    {file = "durations_nlp-1.0.1-py3-none-any.whl", hash = "sha256:91b411a2d92986c63c125c81b91181aed9ba70f5c9efded9401387783631f022"},
+    {file = "durations_nlp-1.0.1.tar.gz", hash = "sha256:25a87a372ddabf5fb45ed1da8fc711a53a0236c2954dc9c51590cee35dbf3136"},
 ]
 exceptiongroup = [
     {file = "exceptiongroup-1.1.0-py3-none-any.whl", hash = "sha256:327cbda3da756e2de031a3107b81ab7b3770a602c4d16ca618298c526f4bec1e"},
