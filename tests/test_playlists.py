@@ -49,6 +49,15 @@ class PlaylistTestCase(unittest.TestCase):
             "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
         )
 
+    def test_append_empty_entries(self):
+        self.spotify.current_user_playlists.return_value = {"items": [{}, {}, {}]}
+
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+
+        self.playlists.append_daily_mix()
+
+        self.spotify.playlist_add_items.assert_not_called()
+
     def test_append_daily_mix_missing_target(self):
         self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
         self.spotify.me.return_value = {"id": "testuser"}

@@ -33,13 +33,16 @@ DEFAULT_CONFIG_FILE = Path(DEFAULT_CONFIG_DIR, "spotcrates_config.toml")
 DEFAULT_CACHE_DIR = user_cache_dir("spotcrates")
 DEFAULT_AUTH_CACHE_FILE = Path(DEFAULT_CACHE_DIR, "spotcrates_auth_cache")
 DEFAULT_AUTH_SCOPES = ["playlist-modify-private", "playlist-read-private"]
+DEFAULT_TARGET = "default_target"
 
 COMMANDS = ["daily", "list-playlists", "subscriptions", "commands"]
 
 COMMAND_DESCRIPTION = f"""
 {'COMMAND NAME':<16} DESCRIPTION
 {'daily':<16} Add "Daily Mix" entries to the end of the target playlist, filtering for excluded entries.
+{'subscriptions':<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
 {'list-playlists':<16} Prints a table describing your playlists.
+{'randomize':<16} Randomizes the playlists with the given names, IDs, or in the given collections.
 {'commands':<16} Prints this command list.
 """
 
@@ -86,10 +89,11 @@ def get_spotify_handle(config):
     return spotipy.Spotify(auth_manager=auth_manager)
 
 
-def append_daily_mix(config):
+def append_daily_mix(config, args):
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("playlists"))
+    # TODO: add randomizer option
     playlists.append_daily_mix()
 
 
@@ -98,6 +102,21 @@ def append_recent_subscriptions(config):
 
     playlists = Playlists(sp, config.get("subscriptions"))
     playlists.append_recent_subscriptions()
+
+
+def randomize_lists(config, args):
+    arguments = args.arguments
+    if arguments:
+        sp = get_spotify_handle(config)
+        playlists = Playlists(sp, config.get("playlists"))
+        results = playlists.randomize_playlists(arguments)
+
+        for item, result in results.items():
+            print(f"{item}: {result.label}")
+        # TODO: evaluate results
+    else:
+        logger.warning("No playlists specified; nothing to randomize")
+        return 5
 
 
 def list_playlists(config, args):
@@ -143,11 +162,11 @@ def parse_cmdline(argv):
         "-s", "--sort_fields", help="The fields to sort against, applied in order"
     )
     parser.add_argument("-f", "--filters", help="Filters to apply to the list")
-    parser.add_argument(
-        "command",
-        metavar="COMMAND",
-        help=f"The command to run (one of {','.join(COMMANDS)})",
-    )
+    parser.add_argument("-r", "--randomize", help="Randomize the target list")
+    parser.add_argument("command", metavar="COMMAND",
+                        help=f"The command to run (one of {','.join(COMMANDS)})")
+    parser.add_argument("arguments", metavar='ARGUMENTS', nargs=argparse.REMAINDER,
+                        help=f"the arguments to the command")
     args = None
     try:
         args = parser.parse_args(argv)
@@ -169,11 +188,13 @@ def main(argv=None):
     # TODO: Add trie for commands
 
     if command == "daily":
-        return append_daily_mix(config)
+        return append_daily_mix(config, args)
     elif command == "list-playlists":
         return list_playlists(config, args)
     elif command == "subscriptions":
         return append_recent_subscriptions(config)
+    elif command == "randomize":
+        return randomize_lists(config, args)
     elif command == "commands":
         return print_commands()
     else:

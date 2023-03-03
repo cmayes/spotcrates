@@ -1,5 +1,8 @@
 import datetime
 import logging
+import random
+from contextlib import suppress
+from enum import Enum
 from typing import List, Set, Dict, Optional
 
 from durations_nlp import Duration
@@ -26,6 +29,17 @@ class PlaylistException(Exception):
 
 class PlaylistConfigException(PlaylistException):
     pass
+
+
+# True, False, File not found
+class PlaylistResult(Enum):
+    """Represents the result of a playlist operation."""
+    def __init__(self, label):
+        self.label = label
+
+    SUCCESS = "Success"
+    FAILURE = "Failure"
+    NOT_FOUND = "Not Found"
 
 
 class Playlists:
@@ -72,7 +86,7 @@ class Playlists:
         daily_mix_target = self.config.get("daily_mix_target")
         daily_mix_exclude_prefix = self.config.get("daily_mix_exclude_prefix")
         for playlist in self.get_all_playlists():
-            list_name = playlist["name"]
+            list_name = playlist.get("name")
             if list_name:
                 if list_name.startswith(daily_mix_prefix):
                     dailies.append(playlist)
@@ -94,6 +108,7 @@ class Playlists:
             self.logger.warning(
                 f"No daily mixes found with the prefix '{daily_mix_prefix}'"
             )
+            return
 
         exclude_ids = self._get_excludes(exclude_lists, target_list)
 
@@ -117,6 +132,16 @@ class Playlists:
             self._add_tracks_to_playlist(target_list, add_tracks)
         else:
             self.logger.warning("No daily songs to add")
+
+    def randomize_playlist(self, playlist) -> PlaylistResult:
+        try:
+            playlist_tracks = self._get_playlist_tracks(playlist["id"])
+            random.shuffle(playlist_tracks)
+            self._add_tracks_to_playlist(playlist, playlist_tracks, replace_playlist=True)
+            return PlaylistResult.SUCCESS
+        except Exception as e:
+            self.logger.warning(f"Problems randomizing playlist '{playlist['name']}'")
+            return PlaylistResult.FAILURE
 
     def append_recent_subscriptions(self):
         # Collect subscription IDs
@@ -155,13 +180,13 @@ class Playlists:
         excludes = self._get_excludes(exclude_lists, target_list)
 
         for id_batch in batched(
-            self._get_subscription_playlist_ids(oldest_timestamp, excludes), 100
+                self._get_subscription_playlist_ids(oldest_timestamp, excludes), 100
         ):
             self.logger.debug(f"Batch size: {len(id_batch)}")
             self.spotify.playlist_add_items(target_list["id"], id_batch)
 
     def _get_subscription_playlist_ids(
-        self, oldest_timestamp, excluded_ids
+            self, oldest_timestamp, excluded_ids
     ) -> Set[str]:
         target_playlist_ids: Set[str] = set()
         subscription_playlists = self.config.get("playlists")
@@ -202,16 +227,20 @@ class Playlists:
         return target_playlist_ids
 
     def _get_playlist_track_ids(self, *args: str) -> Set[str]:
-        track_ids = set()
+        track_ids: Set[str] = set([])
         for playlist_id in args:
             # TODO: See about paring down to just the ID via "fields" param
             playlist_items = get_all_items(
                 self.spotify, self.spotify.playlist_items(playlist_id)
             )
             track_ids.update(
-                {playlist_item["track"]["id"] for playlist_item in playlist_items}
+                {playlist_item.get("track", {}).get("id") for playlist_item in playlist_items}
             )
 
+        # Remove None in case any IDs failed to resolve
+        with suppress(KeyError):
+            # noinspection PyTypeChecker
+            track_ids.remove(None)  # type: ignore
         return track_ids
 
     def _get_playlist_tracks(self, *args: str) -> List[dict]:
@@ -224,12 +253,17 @@ class Playlists:
 
         return tracks
 
-    def _add_tracks_to_playlist(self, target_list, add_tracks):
+    def _add_tracks_to_playlist(self, target_list, add_tracks, replace_playlist=False):
         track_ids = {add_song["track"]["id"] for add_song in add_tracks}
 
+        first_batch = True
         for id_batch in batched(track_ids, 100):
+            if replace_playlist and first_batch:
+                self.spotify.playlist_replace_items(target_list["id"], id_batch)
+            else:
+                self.spotify.playlist_add_items(target_list["id"], id_batch)
             self.logger.debug(f"Batch size: {len(id_batch)}")
-            self.spotify.playlist_add_items(target_list["id"], id_batch)
+            first_batch = False
 
     def _get_excludes(self, exclude_lists, target_list):
         exclude_ids = self._get_playlist_track_ids(target_list["id"])
@@ -249,3 +283,28 @@ class Playlists:
             processed_config[key] = source_config.get(key, default_value)
 
         return processed_config
+
+    def randomize_playlists(self, playlists: List[str]) -> Dict[str, PlaylistResult]:
+        """Replaces the tracks in the target lists with a randomized version of the same tracks.
+
+        :param playlists: A list of playlist names and/or IDs.
+        :return: The results of the randomizing.
+        """
+        lower_playlists = [playlist.lower() for playlist in playlists]
+
+        results = {}
+        for playlist in self.get_all_playlists():
+            list_name = playlist["name"]
+            if list_name and list_name.lower() in lower_playlists:
+                results[list_name] = self.randomize_playlist(playlist)
+            else:
+                list_id = playlist['id']
+                if list_id in playlists:
+                    results[list_id] = self.randomize_playlist(playlist)
+
+        found_targets = results.keys()
+        missing_targets = [missing for missing in playlists if missing not in found_targets]
+        for missing_target in missing_targets:
+            results[missing_target] = PlaylistResult.NOT_FOUND
+
+        return results
