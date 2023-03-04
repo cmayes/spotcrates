@@ -22,7 +22,7 @@ from pathlib import Path
 
 import spotipy
 
-from spotcrates.playlists import Playlists
+from spotcrates.playlists import Playlists, PlaylistResult
 from appdirs import user_config_dir, user_cache_dir
 
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
@@ -43,6 +43,7 @@ COMMAND_DESCRIPTION = f"""
 {'subscriptions':<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
 {'list-playlists':<16} Prints a table describing your playlists.
 {'randomize':<16} Randomizes the playlists with the given names, IDs, or in the given collections.
+{'copy':<16} Copies a playlist into a new playlist. You may optionally specify a destination playlist name.
 {'commands':<16} Prints this command list.
 """
 
@@ -94,14 +95,14 @@ def append_daily_mix(config, args):
 
     playlists = Playlists(sp, config.get("playlists"))
     # TODO: add randomizer option
-    playlists.append_daily_mix()
+    playlists.append_daily_mix(args.randomize)
 
 
-def append_recent_subscriptions(config):
+def append_recent_subscriptions(config, args):
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("subscriptions"))
-    playlists.append_recent_subscriptions()
+    playlists.append_recent_subscriptions(args.randomize)
 
 
 def randomize_lists(config, args):
@@ -113,10 +114,26 @@ def randomize_lists(config, args):
 
         for item, result in results.items():
             print(f"{item}: {result.label}")
-        # TODO: evaluate results
     else:
         logger.warning("No playlists specified; nothing to randomize")
         return 5
+
+
+def copy_list(config, args):
+    arguments = args.arguments
+    if arguments:
+        sp = get_spotify_handle(config)
+        playlists = Playlists(sp, config.get("playlists"))
+        result, copy_name = playlists.copy_list(arguments, args.randomize)
+
+        if PlaylistResult.SUCCESS == result:
+            print(f"Successfully copied {arguments[0]} to {copy_name}")
+        else:
+            logger.warning(f"Problems copying {arguments[0]}")
+
+    else:
+        logger.warning("No playlist specified; nothing to copy")
+        return 6
 
 
 def list_playlists(config, args):
@@ -162,10 +179,10 @@ def parse_cmdline(argv):
         "-s", "--sort_fields", help="The fields to sort against, applied in order"
     )
     parser.add_argument("-f", "--filters", help="Filters to apply to the list")
-    parser.add_argument("-r", "--randomize", help="Randomize the target list")
+    parser.add_argument("-r", "--randomize", help="Randomize the target list", action='store_true')
     parser.add_argument("command", metavar="COMMAND",
                         help=f"The command to run (one of {','.join(COMMANDS)})")
-    parser.add_argument("arguments", metavar='ARGUMENTS', nargs=argparse.REMAINDER,
+    parser.add_argument("arguments", metavar='ARGUMENTS', nargs='*',
                         help=f"the arguments to the command")
     args = None
     try:
@@ -192,9 +209,11 @@ def main(argv=None):
     elif command == "list-playlists":
         return list_playlists(config, args)
     elif command == "subscriptions":
-        return append_recent_subscriptions(config)
+        return append_recent_subscriptions(config, args)
     elif command == "randomize":
         return randomize_lists(config, args)
+    elif command == "copy":
+        return copy_list(config, args)
     elif command == "commands":
         return print_commands()
     else:

@@ -31,9 +31,14 @@ class PlaylistConfigException(PlaylistException):
     pass
 
 
+class PlaylistNamingException(PlaylistException):
+    pass
+
+
 # True, False, File not found
 class PlaylistResult(Enum):
     """Represents the result of a playlist operation."""
+
     def __init__(self, label):
         self.label = label
 
@@ -78,7 +83,7 @@ class Playlists:
 
         return processed_entries
 
-    def append_daily_mix(self):
+    def append_daily_mix(self, randomize):
         dailies = []
         target_list = None
         exclude_lists = []
@@ -115,7 +120,7 @@ class Playlists:
         add_tracks = []
         orig_daily_count = 0
         for daily in dailies:
-            daily_items = self._get_playlist_tracks(daily["id"])
+            daily_items = self._get_playlist_id_tracks(daily["id"])
             orig_daily_count += len(daily_items)
             add_tracks.extend(
                 [
@@ -129,13 +134,15 @@ class Playlists:
             f"{len(add_tracks)} to add from an original count of {orig_daily_count}"
         )
         if add_tracks:
+            if randomize:
+                random.shuffle(add_tracks)
             self._add_tracks_to_playlist(target_list, add_tracks)
         else:
             self.logger.warning("No daily songs to add")
 
     def randomize_playlist(self, playlist) -> PlaylistResult:
         try:
-            playlist_tracks = self._get_playlist_tracks(playlist["id"])
+            playlist_tracks = self._get_playlist_id_tracks(playlist["id"])
             random.shuffle(playlist_tracks)
             self._add_tracks_to_playlist(playlist, playlist_tracks, replace_playlist=True)
             return PlaylistResult.SUCCESS
@@ -143,7 +150,7 @@ class Playlists:
             self.logger.warning(f"Problems randomizing playlist '{playlist['name']}'")
             return PlaylistResult.FAILURE
 
-    def append_recent_subscriptions(self):
+    def append_recent_subscriptions(self, randomize):
         # Collect subscription IDs
         # Look for specified lists
         # Use all lists in order if none are specified
@@ -179,15 +186,17 @@ class Playlists:
 
         excludes = self._get_excludes(exclude_lists, target_list)
 
-        for id_batch in batched(
-                self._get_subscription_playlist_ids(oldest_timestamp, excludes), 100
-        ):
+        playlist_ids = self._get_subscription_playlist_ids(oldest_timestamp, excludes)
+
+        if randomize:
+            playlist_ids = list(playlist_ids)
+            random.shuffle(playlist_ids)
+
+        for id_batch in batched(playlist_ids, 100):
             self.logger.debug(f"Batch size: {len(id_batch)}")
             self.spotify.playlist_add_items(target_list["id"], id_batch)
 
-    def _get_subscription_playlist_ids(
-            self, oldest_timestamp, excluded_ids
-    ) -> Set[str]:
+    def _get_subscription_playlist_ids(self, oldest_timestamp, excluded_ids) -> Set[str]:
         target_playlist_ids: Set[str] = set()
         subscription_playlists = self.config.get("playlists")
         if not subscription_playlists:
@@ -197,7 +206,7 @@ class Playlists:
         for playlist_set, playlist_ids in subscription_playlists.items():
             self.logger.debug(f"Processing subscription set '{playlist_set}'")
             set_playlist_ids = set()
-            for track in self._get_playlist_tracks(*playlist_ids):
+            for track in self._get_playlist_id_tracks(*playlist_ids):
                 iso_added = track.get("added_at")
                 if iso_added:
                     try:
@@ -243,9 +252,30 @@ class Playlists:
             track_ids.remove(None)  # type: ignore
         return track_ids
 
-    def _get_playlist_tracks(self, *args: str) -> List[dict]:
+    def _get_playlist_names_to_ids(self, lower=False) -> Dict[str, str]:
+        name_ids = {}
+        for playlist in self.get_all_playlists():
+            if lower:
+                name_ids[playlist['name'].lower()] = playlist['id']
+            else:
+                name_ids[playlist['name']] = playlist['id']
+
+        return name_ids
+
+    def _get_playlist_name_tracks(self, *playlist_names: str) -> List[dict]:
+        name_id_map = self._get_playlist_names_to_ids(lower=True)
+        playlist_ids = []
+        for lower_name in [name.lower() for name in playlist_names]:
+            playlist_id = name_id_map.get(lower_name)
+            if playlist_id:
+                playlist_ids.append(playlist_id)
+            else:
+                self.logger.warning(f"No playlist found for name '{lower_name}'")
+        return self._get_playlist_id_tracks(*playlist_ids)
+
+    def _get_playlist_id_tracks(self, *playlist_ids: str) -> List[dict]:
         tracks = []
-        for playlist_id in args:
+        for playlist_id in playlist_ids:
             # TODO: See about paring down to just the ID via "fields" param
             tracks.extend(
                 get_all_items(self.spotify, self.spotify.playlist_items(playlist_id))
@@ -290,6 +320,7 @@ class Playlists:
         :param playlists: A list of playlist names and/or IDs.
         :return: The results of the randomizing.
         """
+
         lower_playlists = [playlist.lower() for playlist in playlists]
 
         results = {}
@@ -308,3 +339,50 @@ class Playlists:
             results[missing_target] = PlaylistResult.NOT_FOUND
 
         return results
+
+    def copy_list(self, arguments: List[str], randomize: bool) -> (PlaylistResult, str):
+        try:
+            source_name = arguments[0]
+            if len(arguments) < 2:
+                dest_name = self._create_unique_dest_name(source_name)
+            else:
+                dest_name = arguments[1]
+
+            # TODO: make public flag settable
+            new_playlist = self.spotify.user_playlist_create(self.spotify.me()['id'], dest_name, public=False)
+            tracks_to_copy = self._get_playlist_name_tracks(source_name)
+
+            if randomize:
+                random.shuffle(tracks_to_copy)
+
+            self._add_tracks_to_playlist(new_playlist, tracks_to_copy)
+            return PlaylistResult.SUCCESS, dest_name
+        except Exception:
+            self.logger.warning("Problems copying list", exc_info=True)
+            return PlaylistResult.FAILURE, None
+
+    def _get_playlist_names(self, lower=False) -> List[str]:
+        if lower:
+            return [playlist["name"].lower() for playlist in self.get_all_playlists()]
+        else:
+            return [playlist["name"] for playlist in self.get_all_playlists()]
+
+    def _create_unique_dest_name(self, source_name):
+        existing_lists = self._get_playlist_names(lower=True)
+        count = 1
+
+        dest_name = f"{source_name}-{count:02d}"
+
+        if dest_name.lower() not in existing_lists:
+            return dest_name
+
+        max_count = 99
+
+        while count <= max_count:
+            count += 1
+            dest_name = f"{source_name}-{count:02d}"
+
+            if dest_name.lower() not in existing_lists:
+                return dest_name
+
+        raise PlaylistNamingException(f"Unable to find a unique playlist name (gave up at {dest_name})")
