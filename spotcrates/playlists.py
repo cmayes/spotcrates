@@ -3,7 +3,7 @@ import logging
 import random
 from contextlib import suppress
 from enum import Enum
-from typing import List, Set, Dict, Optional
+from typing import List, Set, Dict, Optional, Tuple
 
 from durations_nlp import Duration
 from spotipy import Spotify
@@ -146,8 +146,8 @@ class Playlists:
             random.shuffle(playlist_tracks)
             self._add_tracks_to_playlist(playlist, playlist_tracks, replace_playlist=True)
             return PlaylistResult.SUCCESS
-        except Exception as e:
-            self.logger.warning(f"Problems randomizing playlist '{playlist['name']}'")
+        except Exception:
+            self.logger.warning(f"Problems randomizing playlist '{playlist['name']}'", exc_info=True)
             return PlaylistResult.FAILURE
 
     def append_recent_subscriptions(self, randomize):
@@ -340,7 +340,7 @@ class Playlists:
 
         return results
 
-    def copy_list(self, arguments: List[str], randomize: bool) -> (PlaylistResult, str):
+    def copy_list(self, arguments: List[str], randomize: bool) -> Tuple[PlaylistResult, str | None]:
         try:
             source_name = arguments[0]
             if len(arguments) < 2:

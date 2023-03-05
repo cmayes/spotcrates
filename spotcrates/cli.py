@@ -168,22 +168,16 @@ def parse_cmdline(argv):
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c",
-        "--config_file",
-        help=f"The location of the config file (default: {DEFAULT_CONFIG_FILE})",
-        default=DEFAULT_CONFIG_FILE,
-        type=Path,
-    )
-    parser.add_argument(
-        "-s", "--sort_fields", help="The fields to sort against, applied in order"
-    )
+    parser.add_argument("-c", "--config_file",
+                        help=f"The location of the config file (default: {DEFAULT_CONFIG_FILE})",
+                        default=DEFAULT_CONFIG_FILE, type=Path)
+    parser.add_argument("-s", "--sort_fields", help="The fields to sort against, applied in order")
     parser.add_argument("-f", "--filters", help="Filters to apply to the list")
     parser.add_argument("-r", "--randomize", help="Randomize the target list", action='store_true')
     parser.add_argument("command", metavar="COMMAND",
                         help=f"The command to run (one of {','.join(COMMANDS)})")
     parser.add_argument("arguments", metavar='ARGUMENTS', nargs='*',
-                        help=f"the arguments to the command")
+                        help="the arguments to the command")
     args = None
     try:
         args = parser.parse_args(argv)
