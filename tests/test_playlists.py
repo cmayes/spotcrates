@@ -1,8 +1,9 @@
 import os
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 
-from spotcrates.playlists import Playlists
+from spotcrates.filters import FieldName
+from spotcrates.playlists import Playlists, PlaylistResult
 from tests.utils import file_json
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -25,7 +26,7 @@ def get_canned_tracks(*args, **kwargs):
         raise Exception(f"Unhandled tracks ID {playlist_id}")
 
 
-class PlaylistTestCase(unittest.TestCase):
+class DailyAppendTestCase(unittest.TestCase):
     def setUp(self):
         self.spotify = MagicMock()
         self.spotify.next.return_value = None
@@ -129,3 +130,50 @@ class PlaylistTestCase(unittest.TestCase):
         self.spotify.playlist_add_items.assert_called_with(
             "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
         )
+
+
+class ListPlaylistsTestCase(unittest.TestCase):
+    def setUp(self):
+        self.spotify = MagicMock()
+        self.spotify.next.return_value = None
+        self.playlists = Playlists(self.spotify)
+
+    def test_list_all(self):
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        playlists = self.playlists.list_all_playlists()
+        self.assertEqual(6, len(playlists))
+        print(playlists)
+
+    def test_filter(self):
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        playlists = self.playlists.list_all_playlists(filters="name:eq:Overplayed")
+        self.assertEqual(1, len(playlists))
+        self.assertEqual("Overplayed", playlists[0][FieldName.PLAYLIST_NAME])
+        print(playlists)
+
+    def test_sort(self):
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        playlists = self.playlists.list_all_playlists(sort_fields="name:rev")
+        self.assertEqual(6, len(playlists))
+        self.assertEqual("Your Top Songs 2022", playlists[0][FieldName.PLAYLIST_NAME])
+        print(playlists)
+
+
+class RandomizePlaylistTestCase(unittest.TestCase):
+    def setUp(self):
+        self.spotify = MagicMock()
+        self.spotify.next.return_value = None
+        self.playlists = Playlists(self.spotify)
+
+    def test_randomize(self):
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+
+        playlist = {'id': '37i9dQZF1E37hnawmowyJn', 'name': 'test_name'}
+        result = self.playlists.randomize_playlist(playlist)
+        self.assertEqual(PlaylistResult.SUCCESS, result)
+
+        self.spotify.playlist_replace_items.assert_called_with(
+            '37i9dQZF1E37hnawmowyJn', ANY)

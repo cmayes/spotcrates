@@ -17,7 +17,7 @@ config_defaults = {
     "daily_mix_prefix": "Daily Mix",
     "daily_mix_target": "Now",
     "daily_mix_exclude_prefix": "Overplayed",
-    "subscriptions_target": "New Subscriptions",
+    "subscriptions_target": "NewSubscriptions",
     "max_age": "3 days",
     "playlists": {},
 }
