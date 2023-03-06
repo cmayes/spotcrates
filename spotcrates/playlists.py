@@ -83,12 +83,15 @@ class Playlists:
 
         return processed_entries
 
-    def append_daily_mix(self, randomize):
+    def append_daily_mix(self, randomize, target_name):
         dailies = []
         target_list = None
         exclude_lists = []
         daily_mix_prefix = self.config.get("daily_mix_prefix")
-        daily_mix_target = self.config.get("daily_mix_target")
+        if target_name:
+            daily_mix_target = target_name
+        else:
+            daily_mix_target = self.config.get("daily_mix_target")
         daily_mix_exclude_prefix = self.config.get("daily_mix_exclude_prefix")
         for playlist in self.get_all_playlists():
             list_name = playlist.get("name")
@@ -117,6 +120,19 @@ class Playlists:
 
         exclude_ids = self._get_excludes(exclude_lists, target_list)
 
+        add_tracks, orig_daily_count = self._fetch_daily_tracks(dailies, exclude_ids)
+
+        self.logger.info(
+            f"{len(add_tracks)} to add from an original count of {orig_daily_count}"
+        )
+        if add_tracks:
+            if randomize:
+                random.shuffle(add_tracks)
+            self._add_tracks_to_playlist(target_list, add_tracks)
+        else:
+            self.logger.warning("No daily songs to add")
+
+    def _fetch_daily_tracks(self, dailies, exclude_ids):
         add_tracks = []
         orig_daily_count = 0
         for daily in dailies:
@@ -129,16 +145,7 @@ class Playlists:
                     if daily_item["track"]["id"] not in exclude_ids
                 ]
             )
-
-        self.logger.info(
-            f"{len(add_tracks)} to add from an original count of {orig_daily_count}"
-        )
-        if add_tracks:
-            if randomize:
-                random.shuffle(add_tracks)
-            self._add_tracks_to_playlist(target_list, add_tracks)
-        else:
-            self.logger.warning("No daily songs to add")
+        return add_tracks, orig_daily_count
 
     def randomize_playlist(self, playlist) -> PlaylistResult:
         try:
@@ -150,13 +157,13 @@ class Playlists:
             self.logger.warning(f"Problems randomizing playlist '{playlist['name']}'", exc_info=True)
             return PlaylistResult.FAILURE
 
-    def append_recent_subscriptions(self, randomize):
-        # Collect subscription IDs
-        # Look for specified lists
-        # Use all lists in order if none are specified
+    def append_recent_subscriptions(self, randomize, target_name):
         target_list = None
         exclude_lists = []
-        subscriptions_target = self.config.get("subscriptions_target")
+        if target_name:
+            subscriptions_target = target_name
+        else:
+            subscriptions_target = self.config.get("subscriptions_target")
         exclude_prefix = self.config.get("daily_mix_exclude_prefix")
         for playlist in self.get_all_playlists():
             list_name = playlist["name"]

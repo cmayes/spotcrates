@@ -44,7 +44,7 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        self.playlists.append_daily_mix(randomize=False)
+        self.playlists.append_daily_mix(randomize=False, target_name=None)
 
         self.spotify.playlist_add_items.assert_called_with(
             "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
@@ -55,7 +55,7 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        self.playlists.append_daily_mix(randomize=False)
+        self.playlists.append_daily_mix(randomize=False, target_name=None)
 
         self.spotify.playlist_add_items.assert_not_called()
 
@@ -71,7 +71,7 @@ class DailyAppendTestCase(unittest.TestCase):
         local_playlists = Playlists(
             self.spotify, {"daily_mix_target": "missing_playlist"}
         )
-        local_playlists.append_daily_mix(randomize=False)
+        local_playlists.append_daily_mix(randomize=False, target_name=None)
         self.spotify.playlist_add_items.assert_called_with(
             "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
         )
@@ -87,7 +87,7 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        self.playlists.append_daily_mix(randomize=False)
+        self.playlists.append_daily_mix(randomize=False, target_name=None)
 
         self.spotify.playlist_add_items.assert_not_called()
 
@@ -107,7 +107,7 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.spotify.next.side_effect = get_next_page
 
-        self.playlists.append_daily_mix(randomize=False)
+        self.playlists.append_daily_mix(randomize=False, target_name=None)
 
         self.spotify.playlist_add_items.assert_not_called()
 
@@ -125,7 +125,7 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.spotify.next.side_effect = get_next_page
 
-        self.playlists.append_daily_mix(randomize=False)
+        self.playlists.append_daily_mix(randomize=False, target_name=None)
 
         self.spotify.playlist_add_items.assert_called_with(
             "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]

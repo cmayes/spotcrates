@@ -94,15 +94,14 @@ def append_daily_mix(config, args):
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("playlists"))
-    # TODO: add randomizer option
-    playlists.append_daily_mix(args.randomize)
+    playlists.append_daily_mix(args.randomize, args.target)
 
 
 def append_recent_subscriptions(config, args):
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("subscriptions"))
-    playlists.append_recent_subscriptions(args.randomize)
+    playlists.append_recent_subscriptions(args.randomize, args.target)
 
 
 def randomize_lists(config, args):
@@ -174,6 +173,8 @@ def parse_cmdline(argv):
     parser.add_argument("-s", "--sort_fields", help="The fields to sort against, applied in order")
     parser.add_argument("-f", "--filters", help="Filters to apply to the list")
     parser.add_argument("-r", "--randomize", help="Randomize the target list", action='store_true')
+    parser.add_argument("-t", "--target",
+                        help="Specify the target name of the operation (overrides any default value)")
     parser.add_argument("command", metavar="COMMAND",
                         help=f"The command to run (one of {','.join(COMMANDS)})")
     parser.add_argument("arguments", metavar='ARGUMENTS', nargs='*',
