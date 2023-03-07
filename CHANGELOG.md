@@ -1,5 +1,7 @@
 # (Unreleased)
 
+# Version 0.5.0
+
 ## Added
 
 - -r option to randomize the added tracks for applicable commands.
