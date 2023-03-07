@@ -1,5 +1,14 @@
 # (Unreleased)
 
+# Version 0.5.0
+
+## Added
+
+- -r option to randomize the added tracks for applicable commands.
+- -t option to provide a custom target name for applicable commands.
+- copy command to copy a source playlist to a target playlist.
+- randomize command to randomize the contents of the given tracks.
+
 # Version 0.4.0
 
 ## Updated

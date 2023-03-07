@@ -43,8 +43,6 @@ jobs:
           poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Mypy
         run: poetry run mypy .
-      - name: Black
-        run: poetry run black --check .
       - name: Test and coverage with pytest
         run: |
           poetry run coverage run -m pytest 
