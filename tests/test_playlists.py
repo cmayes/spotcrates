@@ -1,6 +1,6 @@
 import os
 import unittest
-from unittest.mock import MagicMock, ANY
+from unittest.mock import MagicMock, ANY, Mock
 
 from spotcrates.filters import FieldName
 from spotcrates.playlists import Playlists, PlaylistResult
@@ -48,6 +48,26 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.spotify.playlist_add_items.assert_called_with(
             "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
+        )
+
+    def test_append_daily_mix_random_target(self):
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        self.spotify.me.return_value = {"id": "testuser"}
+        self.spotify.user_playlist_create.return_value = {
+            "id": "1JJB9ICuIoE6aD4jg9vgmV"
+        }
+
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+
+        self.playlists.append_daily_mix(randomize=True, target_name='Custom Target')
+
+        self.spotify.playlist_add_items.assert_called_with(
+            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
+        )
+
+        self.spotify.user_playlist_create.assert_called_with(
+            "testuser", 'Custom Target', public=False
         )
 
     def test_append_empty_entries(self):
@@ -177,3 +197,31 @@ class RandomizePlaylistTestCase(unittest.TestCase):
 
         self.spotify.playlist_replace_items.assert_called_with(
             '37i9dQZF1E37hnawmowyJn', ANY)
+
+    def test_randomize_exception(self):
+        self.spotify.playlist_items.side_effect = Mock(side_effect=Exception('Bad playlist items'))
+
+        playlist = {'id': '37i9dQZF1E37hnawmowyJn', 'name': 'test_name'}
+        result = self.playlists.randomize_playlist(playlist)
+        self.assertEqual(PlaylistResult.FAILURE, result)
+
+        self.spotify.playlist_replace_items.assert_not_called()
+
+class RecentSubscriptionsTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.spotify = MagicMock()
+        self.spotify.next.return_value = None
+        self.playlists = Playlists(self.spotify)
+
+    def test_recent_subscriptions_none_defined(self):
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+        self.spotify.me.return_value = {"id": "testuser"}
+        self.spotify.user_playlist_create.return_value = {
+            "id": "1JJB9ICuIoE6aD4jg9vgmV"
+        }
+        self.playlists.append_recent_subscriptions(randomize=False, target_name=None)
+
+        self.spotify.playlist_add_items.assert_not_called()
