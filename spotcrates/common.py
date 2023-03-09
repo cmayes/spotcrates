@@ -1,4 +1,8 @@
+import logging
+from abc import ABC, abstractmethod
 from itertools import islice
+
+from pygtrie import CharTrie
 
 
 class NotFoundException(Exception):
@@ -47,3 +51,28 @@ def truncate_long_value(full_value: str, length: int, trim_tail: bool = True) ->
         else:
             return full_value[-length:]
     return full_value
+
+
+class BaseLookup(ABC):
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+        self.lookup = self._init_lookup()
+
+    def find(self, lookup_val):
+        if not lookup_val:
+            raise NotFoundException(f"Blank/null lookup value {lookup_val}")
+
+        found_command = self.lookup.longest_prefix(lookup_val)
+
+        if found_command:
+            self.logger.debug(
+                "Got %s (%s) for %s", found_command.value, found_command.key, lookup_val
+            )
+            return found_command.value
+        else:
+            raise NotFoundException(f"No value for {lookup_val}")
+
+    @abstractmethod
+    def _init_lookup(self) -> CharTrie:
+        pass

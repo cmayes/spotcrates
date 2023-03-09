@@ -1,5 +1,15 @@
 # (Unreleased)
 
+# Version 0.5.1
+
+## Added
+
+- Trie for command name evaluation
+
+## Updated
+
+- Extracted common ABC for lookup classes.
+
 # Version 0.5.0
 
 ## Added

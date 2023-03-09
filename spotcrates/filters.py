@@ -5,7 +5,7 @@ from typing import Dict, List
 
 import pygtrie
 
-from spotcrates.common import NotFoundException
+from spotcrates.common import NotFoundException, BaseLookup
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -62,26 +62,7 @@ class FieldName(Enum):
             yield field
 
 
-class FilterLookup:
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-        self.lookup = FilterLookup._init_lookup()
-
-    def find(self, type_name):
-        if not type_name:
-            raise NotFoundException(f"Blank/null filter type {type_name}")
-
-        found_type = self.lookup.longest_prefix(type_name)
-
-        if found_type:
-            self.logger.debug(
-                "Got %s (%s) for %s", found_type.value, found_type.key, type_name
-            )
-            found_val = found_type.value
-            return found_val
-        else:
-            raise NotFoundException(f"No filter type for {type_name}")
+class FilterLookup(BaseLookup):
 
     def eval_filter_type(self, filter_type) -> FilterType:
         filter_type_type = type(filter_type)
@@ -92,8 +73,7 @@ class FilterLookup:
         else:
             raise InvalidFilterException(f"Invalid filter type {filter_type_type}")
 
-    @staticmethod
-    def _init_lookup():
+    def _init_lookup(self):
         lookup = pygtrie.CharTrie()
         lookup["c"] = FilterType.CONTAINS
         lookup["eq"] = FilterType.EQUALS
@@ -107,26 +87,7 @@ class FilterLookup:
         return lookup
 
 
-class FieldLookup:
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-        self.lookup = FieldLookup._init_lookup()
-
-    def find(self, field_name):
-        if not field_name:
-            raise NotFoundException(f"Blank/null field name {field_name}")
-
-        found_field = self.lookup.longest_prefix(field_name)
-
-        if found_field:
-            self.logger.debug(
-                "Got %s (%s) for %s", found_field.value, found_field.key, field_name
-            )
-            found_val = found_field.value
-            return found_val
-        else:
-            raise NotFoundException(f"No field name for {field_name}")
+class FieldLookup(BaseLookup):
 
     def eval_field_name(self, field_name):
         field_name_type = type(field_name)
@@ -137,8 +98,7 @@ class FieldLookup:
         else:
             raise InvalidFilterException(f"Invalid field name type {field_name_type}")
 
-    @staticmethod
-    def _init_lookup():
+    def _init_lookup(self):
         lookup = pygtrie.CharTrie()
         lookup["n"] = FieldName.PLAYLIST_NAME
         lookup["p"] = FieldName.PLAYLIST_NAME
@@ -173,9 +133,9 @@ class FieldFilter:
     def __eq__(self, other):
         if isinstance(other, FieldFilter):
             return (
-                self.field == other.field
-                and self.value == other.value
-                and self.filter_type == other.filter_type
+                    self.field == other.field
+                    and self.value == other.value
+                    and self.filter_type == other.filter_type
             )
         return NotImplemented
 

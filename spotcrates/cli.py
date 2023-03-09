@@ -8,7 +8,9 @@ import argparse
 import logging
 import sys
 
-from spotcrates.common import truncate_long_value
+import pygtrie
+
+from spotcrates.common import BaseLookup, truncate_long_value
 from spotcrates.filters import FieldName
 
 try:
@@ -158,6 +160,19 @@ def list_playlists(config, args):
         )
 
 
+class CommandLookup(BaseLookup):
+
+    def _init_lookup(self):
+        lookup = pygtrie.CharTrie()
+        lookup["d"] = "daily"
+        lookup["l"] = "list-playlists"
+        lookup["s"] = "subscriptions"
+        lookup["r"] = "randomize"
+        lookup["cop"] = "copy"
+        lookup["com"] = "commands"
+        return lookup
+
+
 def parse_cmdline(argv):
     """
     Returns the parsed argument list and return code.
@@ -195,7 +210,8 @@ def main(argv=None):
     if ret != 0:
         return ret
     config = get_config(args.config_file)
-    command = args.command.lower()
+
+    command = CommandLookup().find(args.command.lower())
 
     # TODO: Add trie for commands
 
