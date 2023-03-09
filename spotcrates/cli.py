@@ -8,8 +8,9 @@ import argparse
 import logging
 import sys
 
-from spotcrates.common import truncate_long_value
+from spotcrates.common import truncate_long_value, NotFoundException
 from spotcrates.filters import FieldName
+import pygtrie
 
 try:
     import tomllib
@@ -158,6 +159,39 @@ def list_playlists(config, args):
         )
 
 
+class CommandLookup:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+        self.lookup = CommandLookup._init_lookup()
+
+    def find(self, command_val):
+        if not command_val:
+            raise NotFoundException(f"Blank/null command {command_val}")
+
+        found_command = self.lookup.longest_prefix(command_val)
+
+        if found_command:
+            self.logger.debug(
+                "Got %s (%s) for %s", found_command.value, found_command.key, command_val
+            )
+            found_val = found_command.value
+            return found_val
+        else:
+            raise NotFoundException(f"No command for {command_val}")
+
+    @staticmethod
+    def _init_lookup():
+        lookup = pygtrie.CharTrie()
+        lookup["d"] = "daily"
+        lookup["l"] = "list-playlists"
+        lookup["s"] = "subscriptions"
+        lookup["r"] = "randomize"
+        lookup["cop"] = "copy"
+        lookup["com"] = "commands"
+        return lookup
+
+
 def parse_cmdline(argv):
     """
     Returns the parsed argument list and return code.
@@ -195,7 +229,8 @@ def main(argv=None):
     if ret != 0:
         return ret
     config = get_config(args.config_file)
-    command = args.command.lower()
+
+    command = CommandLookup().find(args.command.lower())
 
     # TODO: Add trie for commands
 

@@ -1,6 +1,7 @@
 import unittest
 
-from spotcrates.cli import parse_cmdline
+from spotcrates.cli import parse_cmdline, CommandLookup
+from spotcrates.common import NotFoundException
 
 
 class ArgparseTestCase(unittest.TestCase):
@@ -48,3 +49,38 @@ class ArgparseTestCase(unittest.TestCase):
         self.assertEqual('test-command', args.command)
         self.assertTrue(args.randomize)
         self.assertSequenceEqual(['arg1', 'arg2', 'arg3'], args.arguments)
+
+
+class CommandNameTestCase(unittest.TestCase):
+    def setUp(self):
+        self.lookup = CommandLookup()
+
+    def test_daily(self):
+        self.assertEqual("daily", self.lookup.find("da"))
+
+    def test_list_playlists(self):
+        self.assertEqual("list-playlists", self.lookup.find("list"))
+
+    def test_subscriptions(self):
+        self.assertEqual("subscriptions", self.lookup.find("subs"))
+
+    def test_randomize(self):
+        self.assertEqual("randomize", self.lookup.find("rand"))
+
+    def test_copy(self):
+        self.assertEqual("copy", self.lookup.find("copy"))
+
+    def test_commands(self):
+        self.assertEqual("commands", self.lookup.find("commands"))
+
+    def test_invalid(self):
+        with self.assertRaises(NotFoundException):
+            self.lookup.find("zzzinvalid")
+
+    def test_none(self):
+        with self.assertRaises(NotFoundException):
+            self.lookup.find(None)
+
+    def test_blank(self):
+        with self.assertRaises(NotFoundException):
+            self.lookup.find("")
