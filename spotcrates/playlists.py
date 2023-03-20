@@ -3,7 +3,7 @@ import logging
 import random
 from contextlib import suppress
 from enum import Enum
-from typing import List, Set, Dict, Optional, Tuple, Any, Iterable
+from typing import List, Set, Dict, Tuple, Any, Iterable
 
 from durations_nlp import Duration
 from spotipy import Spotify
@@ -49,7 +49,7 @@ class PlaylistResult(Enum):
 
 class Playlists:
 
-    def __init__(self, spotify: Spotify, config: Optional[Dict] = None):
+    def __init__(self, spotify: Spotify, config: Dict | None = None):
         """Creates an instance of the playlist manipulation class.
 
         :param spotify: A handle for the initialized SpotiPy client.
@@ -108,6 +108,7 @@ class Playlists:
             daily_mix_target = target_name
         else:
             daily_mix_target = self.config.get("daily_mix_target")
+
         daily_mix_exclude_prefix = self.config.get("daily_mix_exclude_prefix")
         for playlist in self.get_all_playlists():
             list_name = playlist.get("name")
@@ -386,7 +387,7 @@ class Playlists:
         return exclude_ids
 
     @staticmethod
-    def _process_config(config: Optional[Dict]) -> Dict:
+    def _process_config(config: Dict | None) -> Dict:
         processed_config = {}
 
         source_config = {}

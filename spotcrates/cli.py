@@ -73,8 +73,10 @@ def prepare_auth_cache_loc(config: Dict[str, Any]):
     return auth_cache_file
 
 
-def get_spotify_handle(config: Dict[str, Any]):
+def get_spotify_handle(config: Dict[str, Dict[str, Any]]):
     spotify_cfg = config.get("spotify")
+    if not spotify_cfg:
+        raise Exception("No Spotify config defined")
     auth_scopes = spotify_cfg.get("auth_scopes", DEFAULT_AUTH_SCOPES)
     cache_path = prepare_auth_cache_loc(spotify_cfg)
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=cache_path)
