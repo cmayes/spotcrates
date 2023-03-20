@@ -7,6 +7,7 @@ CLI runner for Spotify automation.
 import argparse
 import logging
 import sys
+from typing import Dict, Any, List
 
 import pygtrie
 
@@ -55,7 +56,7 @@ def print_commands():
     print(COMMAND_DESCRIPTION)
 
 
-def get_config(config_file):
+def get_config(config_file: Path):
     """Loads the specified TOML-formatted config file or returns an empty dict"""
     if config_file.exists():
         with open(config_file, mode="rb") as fp:
@@ -65,14 +66,14 @@ def get_config(config_file):
         return {}
 
 
-def prepare_auth_cache_loc(config):
+def prepare_auth_cache_loc(config: Dict[str, Any]):
     auth_cache_file = Path(config.get("auth_cache", DEFAULT_AUTH_CACHE_FILE))
     if not auth_cache_file.exists():
         auth_cache_file.parent.mkdir(parents=True, exist_ok=True)
     return auth_cache_file
 
 
-def get_spotify_handle(config):
+def get_spotify_handle(config: Dict[str, Any]):
     spotify_cfg = config.get("spotify")
     auth_scopes = spotify_cfg.get("auth_scopes", DEFAULT_AUTH_SCOPES)
     cache_path = prepare_auth_cache_loc(spotify_cfg)
@@ -92,21 +93,21 @@ def get_spotify_handle(config):
     return spotipy.Spotify(auth_manager=auth_manager)
 
 
-def append_daily_mix(config, args):
+def append_daily_mix(config: Dict[str, Any], args: argparse.Namespace):
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("playlists"))
     playlists.append_daily_mix(args.randomize, args.target)
 
 
-def append_recent_subscriptions(config, args):
+def append_recent_subscriptions(config: Dict[str, Any], args: argparse.Namespace):
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("subscriptions"))
     playlists.append_recent_subscriptions(args.randomize, args.target)
 
 
-def randomize_lists(config, args):
+def randomize_lists(config: Dict[str, Any], args: argparse.Namespace):
     arguments = args.arguments
     if arguments:
         sp = get_spotify_handle(config)
@@ -120,7 +121,7 @@ def randomize_lists(config, args):
         return 5
 
 
-def copy_list(config, args):
+def copy_list(config: Dict[str, Any], args: argparse.Namespace):
     arguments = args.arguments
     if arguments:
         sp = get_spotify_handle(config)
@@ -137,7 +138,7 @@ def copy_list(config, args):
         return 6
 
 
-def list_playlists(config, args):
+def list_playlists(config: Dict[str, Any], args: argparse.Namespace):
     sp = get_spotify_handle(config)
     playlists = Playlists(sp, config.get("playlists"))
 
@@ -173,7 +174,7 @@ class CommandLookup(BaseLookup):
         return lookup
 
 
-def parse_cmdline(argv):
+def parse_cmdline(argv: List):
     """
     Returns the parsed argument list and return code.
     `argv` is a list of arguments, or `None` for ``sys.argv[1:]``.
@@ -212,8 +213,6 @@ def main(argv=None):
     config = get_config(args.config_file)
 
     command = CommandLookup().find(args.command.lower())
-
-    # TODO: Add trie for commands
 
     if command == "daily":
         return append_daily_mix(config, args)

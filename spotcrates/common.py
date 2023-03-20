@@ -1,15 +1,18 @@
 import logging
 from abc import ABC, abstractmethod
 from itertools import islice
+from typing import Iterable, Dict, Any
 
 from pygtrie import CharTrie
+
+from spotipy import Spotify
 
 
 class NotFoundException(Exception):
     pass
 
 
-def batched(iterable, n):
+def batched(iterable: Iterable, n: int):
     """Batch data into lists of length n. The last batch may be shorter."""
     # batched('ABCDEFG', 3) --> ABC DEF G
     it = iter(iterable)
@@ -20,7 +23,7 @@ def batched(iterable, n):
         yield batch
 
 
-def get_all_items(spotify, first_page):
+def get_all_items(spotify: Spotify, first_page: Dict[str, Any]):
     """Collects the 'items' contents from every page in the given result set."""
     all_items = []
 
@@ -55,6 +58,7 @@ def truncate_long_value(full_value: str, length: int, trim_tail: bool = True) ->
 
 class BaseLookup(ABC):
     def __init__(self):
+        """Uses a trie to find the longest matching prefix for the given lookup value"""
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
         self.lookup = self._init_lookup()

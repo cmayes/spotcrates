@@ -117,7 +117,14 @@ class FieldLookup(BaseLookup):
 
 
 class FieldFilter:
+
     def __init__(self, field, filter_type, value):
+        """Represents a filter with the given settings.
+
+        :param field: The name of the field to filter.
+        :param filter_type: The type of filter to apply.
+        :param value: The value to test filter against.
+        """
         self.filter_lookup = FilterLookup()
         self.field_lookup = FieldLookup()
         self.filter_type = self.filter_lookup.eval_filter_type(filter_type)
@@ -125,6 +132,11 @@ class FieldFilter:
         self.value = value
 
     def passes(self, target_value) -> bool:
+        """Returns whether the given value passes the configured filter.
+
+        :param target_value: The value to evaluate.
+        :return: Whether the value passes the filter.
+        """
         return self.filter_type.test(self.value, target_value)
 
     def __repr__(self):
@@ -185,8 +197,14 @@ def parse_filters(filters: str) -> Dict[FieldName, List[FieldFilter]]:
     return parsed_filters
 
 
-# TODO: Test filter_list and consider moving filter to separate file
 def filter_list(items, filters):
+    """Evaluates the given list of values against the given list of filters, returning
+    items that pass all of the filters.
+
+    :param items: The values to filter.
+    :param filters: The filters to apply.
+    :return: The values that pass all of the filters.
+    """
     parsed_filters = parse_filters(filters)
 
     filtered_items = items
@@ -218,27 +236,7 @@ class SortType(Enum):
     DESCENDING = auto()
 
 
-class SortLookup:
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-        self.lookup = SortLookup._init_lookup()
-
-    def find(self, sort_type):
-        if not sort_type:
-            raise NotFoundException(f"Blank/null sort type {sort_type}")
-
-        found_sort = self.lookup.longest_prefix(sort_type)
-
-        if found_sort:
-            self.logger.debug(
-                "Got %s (%s) for %s", found_sort.value, found_sort.key, sort_type
-            )
-            found_val = found_sort.value
-            return found_val
-        else:
-            raise NotFoundException(f"No sort type for {sort_type}")
-
+class SortLookup(BaseLookup):
     def eval_sort_type(self, sort_type):
         sort_type_type = type(sort_type)
         if sort_type_type == SortType:
@@ -248,8 +246,7 @@ class SortLookup:
         else:
             raise InvalidFilterException(f"Invalid sort type {sort_type_type}")
 
-    @staticmethod
-    def _init_lookup():
+    def _init_lookup(self):
         lookup = pygtrie.CharTrie()
         lookup["a"] = SortType.ASCENDING
         lookup["d"] = SortType.DESCENDING
@@ -266,6 +263,11 @@ class FieldSort:
 
 
 def parse_sorts(sorts: str) -> List[FieldSort]:
+    """Evaluates the sort expressions in the given string, returning the parsed soets.
+
+    :param sorts: The sorts to parse.
+    :return: The parsed sorts.
+    """
     parsed_sorts: List[FieldSort] = []
 
     if not sorts:
@@ -286,7 +288,7 @@ def parse_sorts(sorts: str) -> List[FieldSort]:
     return parsed_sorts
 
 
-def sort_list(items, sort_exp):
+def sort_list(items: List, sort_exp: str):
     parsed_sorts = parse_sorts(sort_exp)
 
     if not parsed_sorts:
