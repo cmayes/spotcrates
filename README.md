@@ -5,9 +5,68 @@
 
 # Installation
 
-(TODO: Add detailed instructions once uploaded to PyPI)
+## Requirements
 
-# Commands
+Spotcrates requires [Python](https://www.python.org/) 10 or newer. You will also need a Spotify account.
+
+## Install from PyPI
+
+```shell
+pip install spotcrates
+```
+
+## Configuration
+
+Spotcrates will need, at minimum, credentials for accessing your Spotify account. You may also specify
+playlists to subscribe to, among other settings.
+
+### Initial Configuration File
+
+Spotcrates can create an initial configuration file for itself. It will write to the specified configuration file
+location, i.e. what you configure with `-c` or `--config_file`. If you don't specify anything, Spotcrates will use
+a platform-specific configuration file location, e.g. `/home/$USER/.config/spotcrates/spotcrates_config.toml` 
+on Linux. The output of `spotcrates -h` includes the default location for your configuration file.
+
+```shell
+spotcrates init-config
+```
+
+### Spotify API Credentials
+
+This bit is not terribly user-friendly as it's assumed that developers will be the ones creating these credentials.
+Since this app runs as a script on your own machine, you'll need to create your own credentials. You will need
+a `Client ID` and a `Client Secret`. The process is a little involved, and the 
+[Spotify docs on the subject](https://developer.spotify.com/documentation/general/guides/authorization/app-settings/) 
+are a bit opaque for the casual user (as I very recently was). These pages do a pretty good job describing 
+the process:
+
+- https://support.heateor.com/get-spotify-client-id-client-secret/
+- https://cran.r-project.org/web/packages/spotidy/vignettes/Connecting-with-the-Spotify-API.html
+
+Note that these projects are mainly interested in extracting data for their respective applications, so the 
+instructions are geared to that end.
+
+Once you have your client ID and client secret, paste them into your Spotcrates configuration file in the `[spotify]`
+section:
+
+```toml
+[spotify]
+client_id = "(your ID here)"
+client_secret = "(your secret here)"
+```
+
+#### Testing Your Credentials
+
+Spotcrates will request and cache authorization info the first time you use your Spotify credentials. The cache location
+is platform-specific. On Linux, it's usually at `/home/$USER/.cache/spotcrates/spotcrates_auth_cache`.
+
+To trigger this step, you can try listing your playlists:
+
+`spotcrates list-playlists`
+
+Spotcrates will initiate an authorization process with Spotify via your default browser. If the authorization
+succeeds, the browser tab will close itself, and your playlists will be listed on the command line.
+
 
 The installation script puts the command `spotcrates` in your Python environment
 (e.g. `/.pyenv/shims/spotcrates`). The command `spotcrates commands` lists all of the 

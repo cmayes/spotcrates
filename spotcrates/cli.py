@@ -10,14 +10,12 @@ import sys
 from typing import Dict, Any, List
 
 import pygtrie
+import tomli_w
 
 from spotcrates.common import BaseLookup, truncate_long_value
 from spotcrates.filters import FieldName
 
-try:
-    import tomllib
-except ModuleNotFoundError:
-    import tomli as tomllib
+import tomli
 
 __author__ = "cmayes"
 
@@ -36,18 +34,20 @@ DEFAULT_CONFIG_FILE = Path(DEFAULT_CONFIG_DIR, "spotcrates_config.toml")
 DEFAULT_CACHE_DIR = user_cache_dir("spotcrates")
 DEFAULT_AUTH_CACHE_FILE = Path(DEFAULT_CACHE_DIR, "spotcrates_auth_cache")
 DEFAULT_AUTH_SCOPES = ["playlist-modify-private", "playlist-read-private"]
+DEFAULT_REDIRECT_URI = 'http://127.0.0.1:5000/'
 DEFAULT_TARGET = "default_target"
 
-COMMANDS = ["daily", "list-playlists", "subscriptions", "commands"]
+COMMANDS = ["copy", "commands", "daily", "init_config", "list-playlists", "randomize", "subscriptions"]
 
 COMMAND_DESCRIPTION = f"""
 {'COMMAND NAME':<16} DESCRIPTION
+{'commands':<16} Prints this command list.
+{'copy':<16} Copies a playlist into a new playlist. You may optionally specify a destination playlist name.
 {'daily':<16} Add "Daily Mix" entries to the end of the target playlist, filtering for excluded entries.
-{'subscriptions':<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
+{'init-config':<16} Initializes the configuration file. Uses the --config_file location as the target. Will not overwrite.
 {'list-playlists':<16} Prints a table describing your playlists.
 {'randomize':<16} Randomizes the playlists with the given names, IDs, or in the given collections.
-{'copy':<16} Copies a playlist into a new playlist. You may optionally specify a destination playlist name.
-{'commands':<16} Prints this command list.
+{'subscriptions':<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
 """
 
 
@@ -60,7 +60,7 @@ def get_config(config_file: Path):
     """Loads the specified TOML-formatted config file or returns an empty dict"""
     if config_file.exists():
         with open(config_file, mode="rb") as fp:
-            return tomllib.load(fp)
+            return tomli.load(fp)
     else:
         logging.debug(f"Config file '{config_file}' does not exist")
         return {}
@@ -78,13 +78,14 @@ def get_spotify_handle(config: Dict[str, Dict[str, Any]]):
     if not spotify_cfg:
         raise Exception("No Spotify config defined")
     auth_scopes = spotify_cfg.get("auth_scopes", DEFAULT_AUTH_SCOPES)
+    redirect_uri = spotify_cfg.get("redirect_uri", DEFAULT_REDIRECT_URI)
     cache_path = prepare_auth_cache_loc(spotify_cfg)
     cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=cache_path)
     if spotify_cfg:
         auth_manager = spotipy.oauth2.SpotifyOAuth(
             client_id=spotify_cfg.get("client_id"),
             client_secret=spotify_cfg.get("client_secret"),
-            redirect_uri=spotify_cfg.get("redirect_uri"),
+            redirect_uri=redirect_uri,
             cache_handler=cache_handler,
             scope=auth_scopes,
         )
@@ -163,16 +164,43 @@ def list_playlists(config: Dict[str, Any], args: argparse.Namespace):
         )
 
 
+# The basic config structure for the CLI
+initial_config = {
+    "spotify": {
+        "client_id": "NO_SPOTIFY_CLIENT_ID",
+        "client_secret": "NO_SPOTIFY_CLIENT_ID",
+        "redirect_uri": "http://127.0.0.1:5000/",
+        "auth_cache": ""
+    },
+    "playlists": {
+
+    }
+
+}
+
+
+def init_config(args: argparse.Namespace):
+    config_file = args.config_file
+
+    if config_file.exists():
+        logger.warning(f"Config file at {config_file} already exists. Not overwriting.")
+        return 10
+
+    with open(config_file, mode="wb") as fp:
+        tomli_w.dump(initial_config, fp)
+
+
 class CommandLookup(BaseLookup):
 
     def _init_lookup(self):
         lookup = pygtrie.CharTrie()
-        lookup["d"] = "daily"
-        lookup["l"] = "list-playlists"
-        lookup["s"] = "subscriptions"
-        lookup["r"] = "randomize"
         lookup["cop"] = "copy"
         lookup["com"] = "commands"
+        lookup["d"] = "daily"
+        lookup["i"] = "init-config"
+        lookup["l"] = "list-playlists"
+        lookup["r"] = "randomize"
+        lookup["s"] = "subscriptions"
         return lookup
 
 
@@ -216,18 +244,20 @@ def main(argv=None):
 
     command = CommandLookup().find(args.command.lower())
 
-    if command == "daily":
-        return append_daily_mix(config, args)
-    elif command == "list-playlists":
-        return list_playlists(config, args)
-    elif command == "subscriptions":
-        return append_recent_subscriptions(config, args)
-    elif command == "randomize":
-        return randomize_lists(config, args)
+    if command == "commands":
+        return print_commands()
     elif command == "copy":
         return copy_list(config, args)
-    elif command == "commands":
-        return print_commands()
+    elif command == "daily":
+        return append_daily_mix(config, args)
+    elif command == "init-config":
+        return init_config(args)
+    elif command == "list-playlists":
+        return list_playlists(config, args)
+    elif command == "randomize":
+        return randomize_lists(config, args)
+    elif command == "subscriptions":
+        return append_recent_subscriptions(config, args)
     else:
         print(
             f"Invalid command '{args.command}'.  Valid commands: {','.join(COMMANDS)}"
