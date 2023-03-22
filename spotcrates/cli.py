@@ -186,12 +186,15 @@ initial_config = {
     }
 }
 
+
 def init_config(args: argparse.Namespace):
     config_file = args.config_file
 
     if config_file.exists():
         logger.warning(f"Config file at {config_file} already exists. Not overwriting.")
         return 10
+
+    config_file.parent.mkdir(parents=True, exist_ok=True)
 
     with open(config_file, mode="wb") as fp:
         tomli_w.dump(initial_config, fp)
