@@ -37,7 +37,7 @@ DEFAULT_AUTH_SCOPES = ["playlist-modify-private", "playlist-read-private"]
 DEFAULT_REDIRECT_URI = 'http://127.0.0.1:5000/'
 DEFAULT_TARGET = "default_target"
 
-COMMANDS = ["copy", "commands", "daily", "init_config", "list-playlists", "randomize", "subscriptions"]
+COMMANDS = ["copy", "commands", "daily", "init-config", "list-playlists", "randomize", "subscriptions"]
 
 COMMAND_DESCRIPTION = f"""
 {'COMMAND NAME':<16} DESCRIPTION
@@ -168,16 +168,23 @@ def list_playlists(config: Dict[str, Any], args: argparse.Namespace):
 initial_config = {
     "spotify": {
         "client_id": "NO_SPOTIFY_CLIENT_ID",
-        "client_secret": "NO_SPOTIFY_CLIENT_ID",
-        "redirect_uri": "http://127.0.0.1:5000/",
-        "auth_cache": ""
+        "client_secret": "NO_SPOTIFY_CLIENT_ID"
     },
     "playlists": {
-
+        "daily_mix_target": "Now",
+        "daily_mix_prefix": "Daily Mix",
+        "daily_mix_excludes": "Overplayed"
+    },
+    "subscriptions": {
+        "subscriptions_target": "NewSubscriptions",
+        "max_age": "3 days",
+        "playlists": {
+            "noisy": ["2uiYiQFpynkWCpIXcBGir9", "37i9dQZF1DX8gDIpdqp1XJ", "3JEvwuKbVKoggEA75gWqET"],
+            "jazz": ["37i9dQZF1DX7YCknf2jT6s", "37i9dQZF1DWUb0uBnlJuTi", "4xRrCdkn4r5lrDOElek5oC",
+                     "2puFFdGTID0iJdQtjLvhal"]
+        }
     }
-
 }
-
 
 def init_config(args: argparse.Namespace):
     config_file = args.config_file

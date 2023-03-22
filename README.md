@@ -67,6 +67,57 @@ To trigger this step, you can try listing your playlists:
 Spotcrates will initiate an authorization process with Spotify via your default browser. If the authorization
 succeeds, the browser tab will close itself, and your playlists will be listed on the command line.
 
+### Customizable Settings for Spotify
+
+These settings can be changed from their defaults, though you won't usually need to do so. They are defined
+under the `[spotify]` config file heading.
+
+- `auth_cache`: The location of the Spotify authorization cache. This defaults to your platform's default cache
+    location base, plus `spotcrates/spotcrates_auth_cache`.
+- `auth_scopes`: A list of authorization scopes that Spotcrates requests. The default scopes are
+    `["playlist-modify-private", "playlist-read-private"]`.
+
+## Playlists
+
+These settings control playlist-related commands like [daily](#daily) or [randomize](#randomize). They
+can be customized under the [playlists] heading in the configuration file.
+
+- `daily_mix_target`: The name of the playlist to target, which is created if it does not exist. Defaults to "Now."
+- `daily_mix_prefix`: The prefix of the "Daily Mix" playlists to be aggregated. Defaults to "Daily Mix."
+- `daily_mix_excludes`: The prefix of the playlists that contain tracks to exclude. Defaults to "Overplayed."
+
+## Subscriptions
+
+These settings are for the [subscriptions](#subscriptions) command. They can be configured under the `[subscriptions]` 
+configuration file heading. 
+
+- `subscriptions_target`: The name of the playlists where the new subscriptions will be appended. Created if 
+    the playlist does not exist. Defaults to `NewSubscriptions`.
+- `max_age`: The maximum age of a track in a playlist for it to be considered "new." Values can be English
+    expressions like `2 weeks` or `96 hours`. Defaults to `3 days`.
+
+### Subscription Playlists
+
+These are the playlist groups used by [subscriptions](#subscriptions) and related commands. All groups are included
+by default. The values are the "spotify IDs" listed in the [list-playlists](#list-playlists) command. These playlist 
+groups are configured under the [subscriptions.playlists] section of the configuration file.
+
+
+```toml
+[subscriptions.playlists]
+# IRL ANGEL, Twin Peaks Vibes, Folk Fabrique,
+# FADO PORTUGAL, While You Work
+quiet = ["37i9dQZF1DX7Ocjwy96xTX", "38rrtWgflrw7grB37aMlsO", "37i9dQZF1DX62XscWX9t6h",
+"67waO0NR8HTySxtB7wfMBZ", "6bUIofrj5PWNIeb67DbUqf"]
+# Japanese Shoegaze, Modern Psychedelia, Adrenaline Coding
+noisy = ["2uiYiQFpynkWCpIXcBGir9", "37i9dQZF1DX8gDIpdqp1XJ", "3JEvwuKbVKoggEA75gWqET"]
+# State of Jazz, Jazz-Funk, Jazz Funk (Instrumental),
+# Jazz Funk & Groove
+jazz = ["37i9dQZF1DX7YCknf2jT6s", "37i9dQZF1DWUb0uBnlJuTi", "4xRrCdkn4r5lrDOElek5oC",
+"2puFFdGTID0iJdQtjLvhal"]
+```
+
+# Commands
 
 The installation script puts the command `spotcrates` in your Python environment
 (e.g. `/.pyenv/shims/spotcrates`). The command `spotcrates commands` lists all of the 

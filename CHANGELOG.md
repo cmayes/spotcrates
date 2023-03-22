@@ -1,10 +1,17 @@
 # (Unreleased)
 
+# Version 0.6.0
+
+## Added
+
+- init-config command for creating an initial config file.
+- A lot of documentation.
+
 # Version 0.5.1
 
 ## Added
 
-- Trie for command name evaluation
+- Trie for command name evaluation.
 
 ## Updated
 
