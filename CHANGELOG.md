@@ -1,5 +1,11 @@
 # (Unreleased)
 
+# Version 0.6.1
+
+## Fixed
+
+- Create parent dirs for new config file.
+
 # Version 0.6.0
 
 ## Added
