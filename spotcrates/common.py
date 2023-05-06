@@ -29,12 +29,15 @@ def get_all_items(spotify: Spotify, first_page: Dict[str, Any]):
 
     all_items.extend(first_page["items"])
 
-    next_page = spotify.next(first_page)
-    while next_page:
-        all_items.extend(next_page["items"])
-        next_page = spotify.next(next_page)
+    try:
+        next_page = spotify.next(first_page)
+        while next_page:
+            all_items.extend(next_page["items"])
+            next_page = spotify.next(next_page)
+    except Exception:
+        logging.warning("Problems paging given Spotify items list", exc_info=True)
 
-    return all_items
+    return [item for item in all_items if item is not None]
 
 
 def truncate_long_value(full_value: str, length: int, trim_tail: bool = True) -> str:

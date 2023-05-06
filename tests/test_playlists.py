@@ -26,6 +26,7 @@ def get_canned_tracks(*args, **kwargs):
         raise Exception(f"Unhandled tracks ID {playlist_id}")
 
 
+# noinspection DuplicatedCode,PyTypeChecker
 class DailyAppendTestCase(unittest.TestCase):
     def setUp(self):
         self.spotify = MagicMock()
@@ -151,6 +152,40 @@ class DailyAppendTestCase(unittest.TestCase):
             "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
         )
 
+    def test_append_daily_mix_paged_tracks_filter_none(self):
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+
+        def get_next_page(*args, **kwargs):
+            page = args[0]
+            if page == TRACKS_DAILY1:
+                return TRACKS_TARGET + [None]
+            else:
+                return None
+
+        self.spotify.next.side_effect = get_next_page
+
+        self.playlists.append_daily_mix(randomize=False, target_name=None)
+
+        self.spotify.playlist_add_items.assert_called_with(
+            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
+        )
+
+
+    def test_append_daily_mix_paged_tracks_exception_next(self):
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+
+        self.spotify.next.side_effect = Mock(side_effect=IOError("Problems paging"))
+
+        self.playlists.append_daily_mix(randomize=False, target_name=None)
+
+        self.spotify.playlist_add_items.assert_called_with(
+            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
+        )
+
 
 class ListPlaylistsTestCase(unittest.TestCase):
     def setUp(self):
@@ -207,6 +242,8 @@ class RandomizePlaylistTestCase(unittest.TestCase):
 
         self.spotify.playlist_replace_items.assert_not_called()
 
+
+# noinspection PyTypeChecker
 class RecentSubscriptionsTestCase(unittest.TestCase):
 
     def setUp(self):
