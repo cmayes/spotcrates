@@ -1,5 +1,12 @@
 # (Unreleased)
 
+# Version 0.6.2
+
+## Fixed
+
+- Added try/catch for Spotify list paging.
+- Added None filter for Spotify list paging.
+
 # Version 0.6.1
 
 ## Fixed
