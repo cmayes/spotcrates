@@ -17,6 +17,10 @@ from spotcrates.filters import FieldName
 
 import tomli
 
+import importlib.metadata
+
+__version__ = importlib.metadata.version('spotcrates')
+
 __author__ = "cmayes"
 
 from pathlib import Path
@@ -229,6 +233,7 @@ def parse_cmdline(argv: List):
     parser.add_argument("-s", "--sort_fields", help="The fields to sort against, applied in order")
     parser.add_argument("-f", "--filters", help="Filters to apply to the list")
     parser.add_argument("-r", "--randomize", help="Randomize the target list", action='store_true')
+    parser.add_argument('--version', action='version', version=__version__)
     parser.add_argument("-t", "--target",
                         help="Specify the target name of the operation (overrides any default value)")
     parser.add_argument("command", metavar="COMMAND",

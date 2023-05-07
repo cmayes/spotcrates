@@ -1,5 +1,11 @@
 # (Unreleased)
 
+# Version 0.6.3
+
+## Added
+
+- An initial version flag --version.
+
 # Version 0.6.2
 
 ## Fixed
