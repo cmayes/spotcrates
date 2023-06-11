@@ -1,5 +1,11 @@
 # (Unreleased)
 
+# Version 0.6.4
+
+## Added
+
+- A loglevel CLI option.
+
 # Version 0.6.3
 
 ## Added

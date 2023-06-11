@@ -57,7 +57,6 @@ class Playlists:
         """
         self.spotify = spotify
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
 
         self.config = self._process_config(config)
 
@@ -208,6 +207,8 @@ class Playlists:
         excludes = self._get_excludes(exclude_lists, target_list)
 
         playlist_ids = self._get_subscription_playlist_ids(oldest_timestamp, excludes)
+
+        self.logger.info(f"{len(playlist_ids)} subscription tracks to add")
 
         if randomize:
             playlist_ids = list(playlist_ids)

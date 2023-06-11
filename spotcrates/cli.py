@@ -30,7 +30,10 @@ import spotipy
 from spotcrates.playlists import Playlists, PlaylistResult
 from appdirs import user_config_dir, user_cache_dir
 
-logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
+# Turn down noisy third-party debug logs
+logging.getLogger('spotipy').setLevel(logging.INFO)
+logging.getLogger('urllib3').setLevel(logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_CONFIG_DIR = user_config_dir("spotcrates")
@@ -53,6 +56,9 @@ COMMAND_DESCRIPTION = f"""
 {'randomize':<16} Randomizes the playlists with the given names, IDs, or in the given collections.
 {'subscriptions':<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
 """
+
+# LOG_FORMAT = "%(levelname)s (%(name)s): %(message)s"
+LOG_FORMAT = "%(message)s"
 
 
 def print_commands():
@@ -240,6 +246,12 @@ def parse_cmdline(argv: List):
                         help=f"The command to run (one of {','.join(COMMANDS)})")
     parser.add_argument("arguments", metavar='ARGUMENTS', nargs='*',
                         help="the arguments to the command")
+    parser.add_argument('-log',
+                        '--loglevel',
+                        default='info',
+                        type=str.upper,
+                        choices=logging._nameToLevel.keys(),
+                        help='Provide logging level. Example: --loglevel debug, default is info')
     args = None
     try:
         args = parser.parse_args(argv)
@@ -255,6 +267,8 @@ def main(argv=None):
     args, ret = parse_cmdline(argv)
     if ret != 0:
         return ret
+    logging.basicConfig(format=LOG_FORMAT, level=args.loglevel)
+
     config = get_config(args.config_file)
 
     command = CommandLookup().find(args.command.lower())

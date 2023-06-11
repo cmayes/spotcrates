@@ -8,7 +8,6 @@ import pygtrie
 from spotcrates.common import NotFoundException, BaseLookup
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class InvalidFilterException(Exception):

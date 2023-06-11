@@ -63,7 +63,6 @@ class BaseLookup(ABC):
     def __init__(self):
         """Uses a trie to find the longest matching prefix for the given lookup value"""
         self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
         self.lookup = self._init_lookup()
 
     def find(self, lookup_val):
