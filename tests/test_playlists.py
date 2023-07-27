@@ -10,6 +10,8 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 PLAYLIST_LIST = file_json(os.path.join(DATA_DIR, "playlists.json"))
 PLAYLIST_NO_DAILY_LIST = file_json(os.path.join(DATA_DIR, "playlists_no_daily.json"))
 TRACKS_DAILY1 = file_json(os.path.join(DATA_DIR, "tracks_daily1.json"))
+TRACKS_DAILY1_SOME_INVALID = file_json(os.path.join(DATA_DIR, "tracks_daily1_some_invalid.json"))
+TRACKS_DAILY1_MINUS_INVALID = file_json(os.path.join(DATA_DIR, "tracks_daily1_minus_invalid.json"))
 TRACKS_OVERPLAYED = file_json(os.path.join(DATA_DIR, "tracks_overplayed.json"))
 TRACKS_TARGET = file_json(os.path.join(DATA_DIR, "tracks_target.json"))
 
@@ -22,6 +24,10 @@ def get_canned_tracks(*args, **kwargs):
         return TRACKS_OVERPLAYED
     elif playlist_id == "1JJB9ICuIoE6aD4jg9vgmV":
         return TRACKS_TARGET
+    elif playlist_id == "some_invalid":
+        return TRACKS_DAILY1_SOME_INVALID
+    elif playlist_id == "minus_invalid":
+        return TRACKS_DAILY1_MINUS_INVALID
     else:
         raise Exception(f"Unhandled tracks ID {playlist_id}")
 
@@ -262,3 +268,31 @@ class RecentSubscriptionsTestCase(unittest.TestCase):
         self.playlists.append_recent_subscriptions(randomize=False, target_name=None)
 
         self.spotify.playlist_add_items.assert_not_called()
+
+# _filter_for_tracks
+
+class PlaylistFilterTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.spotify = MagicMock()
+        self.spotify.next.return_value = None
+        self.playlists = Playlists(self.spotify)
+
+    def test_all_valid(self):
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+
+        result = self.playlists._filter_for_tracks('37i9dQZF1E37hnawmowyJn')
+
+        tracks = get_canned_tracks('37i9dQZF1E37hnawmowyJn')
+
+        self.assertEqual(tracks['items'], result)
+
+
+    def test_some_invalid(self):
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+
+        result = self.playlists._filter_for_tracks('some_invalid')
+
+        tracks = get_canned_tracks('minus_invalid')
+
+        self.assertEqual(tracks['items'], result)

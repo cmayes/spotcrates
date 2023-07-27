@@ -1,5 +1,11 @@
 # (Unreleased)
 
+# Version 0.6.5
+
+## Fixed
+
+- Added a filter to remove invalid tracks.
+
 # Version 0.6.4
 
 ## Added

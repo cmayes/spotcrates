@@ -324,10 +324,8 @@ class Playlists:
     def _get_playlist_track_ids(self, *args: str) -> Set[str]:
         track_ids: Set[str] = set([])
         for playlist_id in args:
-            # TODO: See about paring down to just the ID via "fields" param
-            playlist_items = get_all_items(
-                self.spotify, self.spotify.playlist_items(playlist_id)
-            )
+            playlist_items = self._filter_for_tracks(playlist_id)
+
             track_ids.update(
                 {playlist_item.get("track", {}).get("id") for playlist_item in playlist_items}
             )
@@ -362,12 +360,19 @@ class Playlists:
     def _get_playlist_id_tracks(self, *playlist_ids: str) -> List[dict]:
         tracks = []
         for playlist_id in playlist_ids:
-            # TODO: See about paring down to just the ID via "fields" param
-            tracks.extend(
-                get_all_items(self.spotify, self.spotify.playlist_items(playlist_id))
-            )
+            filtered_tracks = self._filter_for_tracks(playlist_id)
+
+            tracks.extend(filtered_tracks)
 
         return tracks
+
+    def _filter_for_tracks(self, playlist_id):
+        all_tracks = get_all_items(self.spotify, self.spotify.playlist_items(playlist_id))
+        filtered_tracks = []
+        for cur_track in all_tracks:
+            if cur_track.get('track') and cur_track['track'].get('id'):
+                filtered_tracks.append(cur_track)
+        return filtered_tracks
 
     def _add_tracks_to_playlist(self, target_list:Dict[str, Any], add_tracks: List, replace_playlist=False):
         track_ids = {add_song["track"]["id"] for add_song in add_tracks}
