@@ -374,7 +374,7 @@ class Playlists:
                 filtered_tracks.append(cur_track)
         return filtered_tracks
 
-    def _add_tracks_to_playlist(self, target_list:Dict[str, Any], add_tracks: List, replace_playlist=False):
+    def _add_tracks_to_playlist(self, target_list: Dict[str, Any], add_tracks: List, replace_playlist=False):
         track_ids = {add_song["track"]["id"] for add_song in add_tracks}
 
         first_batch = True

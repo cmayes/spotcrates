@@ -262,7 +262,7 @@ class FieldSort:
 
 
 def parse_sorts(sorts: str) -> List[FieldSort]:
-    """Evaluates the sort expressions in the given string, returning the parsed soets.
+    """Evaluates the sort expressions in the given string, returning the parsed sorts.
 
     :param sorts: The sorts to parse.
     :return: The parsed sorts.
