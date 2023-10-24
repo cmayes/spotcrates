@@ -1,12 +1,28 @@
+import datetime
 import logging
 from abc import ABC, abstractmethod
 from itertools import islice
+from pathlib import Path
 from typing import Iterable, Dict, Any
 
+import spotipy
+import tomli
+from appdirs import user_config_dir, user_cache_dir
 from pygtrie import CharTrie
 
 from spotipy import Spotify
 
+DEFAULT_CONFIG_DIR = user_config_dir("spotcrates")
+DEFAULT_CONFIG_FILE = Path(DEFAULT_CONFIG_DIR, "spotcrates_config.toml")
+DEFAULT_CACHE_DIR = user_cache_dir("spotcrates")
+DEFAULT_AUTH_CACHE_FILE = Path(DEFAULT_CACHE_DIR, "spotcrates_auth_cache")
+DEFAULT_AUTH_SCOPES = ["playlist-modify-private", "playlist-read-private"]
+DEFAULT_REDIRECT_URI = 'http://127.0.0.1:5000/'
+DEFAULT_TARGET = "default_target"
+ISO_8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+ZERO_TIMESTAMP = datetime.datetime.strptime(
+    '1970-01-01T00:00:00Z', ISO_8601_TIMESTAMP_FORMAT
+)
 
 class NotFoundException(Exception):
     pass
@@ -81,3 +97,45 @@ class BaseLookup(ABC):
     @abstractmethod
     def _init_lookup(self) -> CharTrie:
         pass
+
+
+def get_spotify_handle(config: Dict[str, Dict[str, Any]]):
+    spotify_cfg = config.get("spotify")
+    if not spotify_cfg:
+        raise Exception("No Spotify config defined")
+    auth_scopes = spotify_cfg.get("auth_scopes", DEFAULT_AUTH_SCOPES)
+    redirect_uri = spotify_cfg.get("redirect_uri", DEFAULT_REDIRECT_URI)
+    cache_path = prepare_auth_cache_loc(spotify_cfg)
+    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=cache_path)
+    if spotify_cfg:
+        auth_manager = spotipy.oauth2.SpotifyOAuth(
+            client_id=spotify_cfg.get("client_id"),
+            client_secret=spotify_cfg.get("client_secret"),
+            redirect_uri=redirect_uri,
+            cache_handler=cache_handler,
+            scope=auth_scopes,
+        )
+    else:
+        auth_manager = spotipy.oauth2.SpotifyOAuth(
+            cache_handler=cache_handler, scope=auth_scopes
+        )
+    return spotipy.Spotify(auth_manager=auth_manager)
+
+
+def prepare_auth_cache_loc(config: Dict[str, Any]):
+    auth_cache_file = Path(config.get("auth_cache", DEFAULT_AUTH_CACHE_FILE))
+    if not auth_cache_file.exists():
+        auth_cache_file.parent.mkdir(parents=True, exist_ok=True)
+    return auth_cache_file
+
+
+def get_config(config_file: Path):
+    """Loads the specified TOML-formatted config file or returns an empty dict"""
+    if config_file.exists():
+        with open(config_file, mode="rb") as fp:
+            return tomli.load(fp)
+    else:
+        logging.debug(f"Config file '{config_file}' does not exist")
+        return {}
+
+

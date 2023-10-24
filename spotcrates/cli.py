@@ -12,10 +12,8 @@ from typing import Dict, Any, List
 import pygtrie
 import tomli_w
 
-from spotcrates.common import BaseLookup, truncate_long_value
+from spotcrates.common import BaseLookup, truncate_long_value, get_spotify_handle, DEFAULT_CONFIG_FILE, get_config
 from spotcrates.filters import FieldName
-
-import tomli
 
 import importlib.metadata
 
@@ -25,24 +23,13 @@ __author__ = "cmayes"
 
 from pathlib import Path
 
-import spotipy
-
 from spotcrates.playlists import Playlists, PlaylistResult
-from appdirs import user_config_dir, user_cache_dir
 
 # Turn down noisy third-party debug logs
 logging.getLogger('spotipy').setLevel(logging.INFO)
 logging.getLogger('urllib3').setLevel(logging.INFO)
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_CONFIG_DIR = user_config_dir("spotcrates")
-DEFAULT_CONFIG_FILE = Path(DEFAULT_CONFIG_DIR, "spotcrates_config.toml")
-DEFAULT_CACHE_DIR = user_cache_dir("spotcrates")
-DEFAULT_AUTH_CACHE_FILE = Path(DEFAULT_CACHE_DIR, "spotcrates_auth_cache")
-DEFAULT_AUTH_SCOPES = ["playlist-modify-private", "playlist-read-private"]
-DEFAULT_REDIRECT_URI = 'http://127.0.0.1:5000/'
-DEFAULT_TARGET = "default_target"
 
 COMMANDS = ["copy", "commands", "daily", "init-config", "list-playlists", "randomize", "subscriptions"]
 
@@ -64,46 +51,6 @@ LOG_FORMAT = "%(message)s"
 def print_commands():
     """Prints available commands."""
     print(COMMAND_DESCRIPTION)
-
-
-def get_config(config_file: Path):
-    """Loads the specified TOML-formatted config file or returns an empty dict"""
-    if config_file.exists():
-        with open(config_file, mode="rb") as fp:
-            return tomli.load(fp)
-    else:
-        logging.debug(f"Config file '{config_file}' does not exist")
-        return {}
-
-
-def prepare_auth_cache_loc(config: Dict[str, Any]):
-    auth_cache_file = Path(config.get("auth_cache", DEFAULT_AUTH_CACHE_FILE))
-    if not auth_cache_file.exists():
-        auth_cache_file.parent.mkdir(parents=True, exist_ok=True)
-    return auth_cache_file
-
-
-def get_spotify_handle(config: Dict[str, Dict[str, Any]]):
-    spotify_cfg = config.get("spotify")
-    if not spotify_cfg:
-        raise Exception("No Spotify config defined")
-    auth_scopes = spotify_cfg.get("auth_scopes", DEFAULT_AUTH_SCOPES)
-    redirect_uri = spotify_cfg.get("redirect_uri", DEFAULT_REDIRECT_URI)
-    cache_path = prepare_auth_cache_loc(spotify_cfg)
-    cache_handler = spotipy.cache_handler.CacheFileHandler(cache_path=cache_path)
-    if spotify_cfg:
-        auth_manager = spotipy.oauth2.SpotifyOAuth(
-            client_id=spotify_cfg.get("client_id"),
-            client_secret=spotify_cfg.get("client_secret"),
-            redirect_uri=redirect_uri,
-            cache_handler=cache_handler,
-            scope=auth_scopes,
-        )
-    else:
-        auth_manager = spotipy.oauth2.SpotifyOAuth(
-            cache_handler=cache_handler, scope=auth_scopes
-        )
-    return spotipy.Spotify(auth_manager=auth_manager)
 
 
 def append_daily_mix(config: Dict[str, Any], args: argparse.Namespace):

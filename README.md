@@ -95,6 +95,9 @@ configuration file heading.
     the playlist does not exist. Defaults to `NewSubscriptions`.
 - `max_age`: The maximum age of a track in a playlist for it to be considered "new." Values can be English
     expressions like `2 weeks` or `96 hours`. Defaults to `3 days`.
+- `include_zero_timestamps`: Whether to include tracks with an `added_at` of `1970-01-01T00:00:00Z`. Some
+    Spotify playlists do not set a useful `added_at` value. This flag includes those tracks despite
+    their not passing the `max_age` test.
 
 ### Subscription Playlists
 

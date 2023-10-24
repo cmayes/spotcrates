@@ -8,10 +8,8 @@ from typing import List, Set, Dict, Tuple, Any, Iterable
 from durations_nlp import Duration
 from spotipy import Spotify
 
-from spotcrates.common import batched, get_all_items
+from spotcrates.common import batched, get_all_items, ISO_8601_TIMESTAMP_FORMAT, ZERO_TIMESTAMP
 from spotcrates.filters import FieldName, filter_list, sort_list
-
-ISO_8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 config_defaults = {
     "daily_mix_prefix": "Daily Mix",
@@ -19,6 +17,7 @@ config_defaults = {
     "daily_mix_exclude_prefix": "Overplayed",
     "subscriptions_target": "NewSubscriptions",
     "max_age": "3 days",
+    "include_zero_timestamps": True,
     "playlists": {},
 }
 
@@ -206,7 +205,8 @@ class Playlists:
 
         excludes = self._get_excludes(exclude_lists, target_list)
 
-        playlist_ids = self._get_subscription_playlist_ids(oldest_timestamp, excludes)
+        include_zero_timestamps = self.config.get("include_zero_timestamps", False)
+        playlist_ids = self._get_subscription_playlist_ids(oldest_timestamp, excludes, include_zero_timestamps)
 
         self.logger.info(f"{len(playlist_ids)} subscription tracks to add")
 
@@ -282,7 +282,10 @@ class Playlists:
             )
         return add_tracks, orig_daily_count
 
-    def _get_subscription_playlist_ids(self, oldest_timestamp: datetime, excluded_ids: Iterable[str]) -> Set[str]:
+    def _get_subscription_playlist_ids(self,
+                                       oldest_timestamp: datetime,
+                                       excluded_ids: Iterable[str],
+                                       include_zero_timestamps: bool) -> Set[str]:
         target_playlist_ids: Set[str] = set()
         subscription_playlists = self.config.get("playlists")
         if not subscription_playlists:
@@ -299,7 +302,7 @@ class Playlists:
                         track_timestamp = datetime.datetime.strptime(
                             iso_added, ISO_8601_TIMESTAMP_FORMAT
                         )
-                        if track_timestamp >= oldest_timestamp:
+                        if self._include_for_added_at(oldest_timestamp, track_timestamp, include_zero_timestamps):
                             track_id = track.get("track", {}).get("id")
                             if track_id and track_id not in excluded_ids:
                                 set_playlist_ids.add(track_id)
@@ -320,6 +323,15 @@ class Playlists:
             f"Found a total of {len(target_playlist_ids)} newer than {oldest_timestamp}"
         )
         return target_playlist_ids
+
+    @staticmethod
+    def _include_for_added_at(oldest_timestamp: datetime,
+                              track_timestamp: datetime,
+                              include_zero_timestamps: bool) -> bool:
+        if include_zero_timestamps:
+            return track_timestamp >= oldest_timestamp or track_timestamp == ZERO_TIMESTAMP
+        else:
+            return track_timestamp >= oldest_timestamp
 
     def _get_playlist_track_ids(self, *args: str) -> Set[str]:
         track_ids: Set[str] = set([])
