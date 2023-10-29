@@ -1,5 +1,10 @@
 # (Unreleased)
 
+# Version 0.7.0
+
+## Added
+- Allow zero-epoch ('1970-01-01T00:00:00Z') timestamps with the 'include_zero_timestamps' flag for subscriptions.
+
 # Version 0.6.5
 
 ## Fixed

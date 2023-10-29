@@ -12,6 +12,7 @@ PLAYLIST_NO_DAILY_LIST = file_json(os.path.join(DATA_DIR, "playlists_no_daily.js
 TRACKS_DAILY1 = file_json(os.path.join(DATA_DIR, "tracks_daily1.json"))
 TRACKS_DAILY1_SOME_INVALID = file_json(os.path.join(DATA_DIR, "tracks_daily1_some_invalid.json"))
 TRACKS_DAILY1_MINUS_INVALID = file_json(os.path.join(DATA_DIR, "tracks_daily1_minus_invalid.json"))
+TRACKS_DAILY1_SOME_EPOCH = file_json(os.path.join(DATA_DIR, "tracks_daily1_some_epoch_tracks.json"))
 TRACKS_OVERPLAYED = file_json(os.path.join(DATA_DIR, "tracks_overplayed.json"))
 TRACKS_TARGET = file_json(os.path.join(DATA_DIR, "tracks_target.json"))
 
@@ -28,6 +29,8 @@ def get_canned_tracks(*args, **kwargs):
         return TRACKS_DAILY1_SOME_INVALID
     elif playlist_id == "minus_invalid":
         return TRACKS_DAILY1_MINUS_INVALID
+    elif playlist_id == "some_epoch":
+        return TRACKS_DAILY1_SOME_EPOCH
     else:
         raise Exception(f"Unhandled tracks ID {playlist_id}")
 
@@ -178,7 +181,6 @@ class DailyAppendTestCase(unittest.TestCase):
             "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
         )
 
-
     def test_append_daily_mix_paged_tracks_exception_next(self):
         self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
 
@@ -269,7 +271,57 @@ class RecentSubscriptionsTestCase(unittest.TestCase):
 
         self.spotify.playlist_add_items.assert_not_called()
 
-# _filter_for_tracks
+    def test_recent_subscriptions_exclude_zeros(self):
+        config = {
+            "playlists": {"test": ["some_epoch"]},
+            "oldest_timestamp": "2022-12-10T15:56:13Z",
+            "include_zero_timestamps": False,
+        }
+        local_playlists = Playlists(self.spotify, config=config)
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+        self.spotify.me.return_value = {"id": "testuser"}
+        self.spotify.user_playlist_create.return_value = {
+            "id": "1JJB9ICuIoE6aD4jg9vgmV"
+        }
+        local_playlists.append_recent_subscriptions(randomize=False, target_name=None)
+
+        # self.spotify.playlist_add_items(target_list["id"], id_batch)
+        call_args = self.spotify.playlist_add_items.call_args.args
+        self.assertEqual(2, len(call_args))
+        self.assertEqual("1JJB9ICuIoE6aD4jg9vgmV", call_args[0])
+        all_track_ids = ['GWzB3Hhj22I8SLs6Gt9B5O', 'X4snMZtCekj688i8a1H7P7',
+                         'gD5YUJdvxOg2LBURBFg8MO', 'vM3EbgX80HHmN7j7r67X3J']
+        self.assertListEqual(sorted(all_track_ids), sorted(call_args[1]))
+        print(f"Call args: {call_args}")
+
+    def test_recent_subscriptions_include_zeros(self):
+        config = {
+            "playlists": {"test": ["some_epoch"]},
+            "oldest_timestamp": "2022-12-10T15:56:13Z",
+            "include_zero_timestamps": True,
+        }
+        local_playlists = Playlists(self.spotify, config=config)
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
+
+        self.spotify.playlist_items.side_effect = get_canned_tracks
+        self.spotify.me.return_value = {"id": "testuser"}
+        self.spotify.user_playlist_create.return_value = {
+            "id": "1JJB9ICuIoE6aD4jg9vgmV"
+        }
+        local_playlists.append_recent_subscriptions(randomize=False, target_name=None)
+
+        # self.spotify.playlist_add_items(target_list["id"], id_batch)
+        call_args = self.spotify.playlist_add_items.call_args.args
+        self.assertEqual(2, len(call_args))
+        self.assertEqual("1JJB9ICuIoE6aD4jg9vgmV", call_args[0])
+        all_track_ids = ['GWzB3Hhj22I8SLs6Gt9B5O', 'Q2zReqJDrr0GMyu8cU8KtD',
+                         'X4snMZtCekj688i8a1H7P7', 'gD5YUJdvxOg2LBURBFg8MO',
+                         'sl2AA4JIQbn2R3eRkAsvx0', 'vM3EbgX80HHmN7j7r67X3J', 'yHBi3S6eRcld0JtNYzmy3k']
+        self.assertListEqual(sorted(all_track_ids), sorted(call_args[1]))
+        print(f"Call args: {call_args}")
+
 
 class PlaylistFilterTestCase(unittest.TestCase):
 
@@ -286,7 +338,6 @@ class PlaylistFilterTestCase(unittest.TestCase):
         tracks = get_canned_tracks('37i9dQZF1E37hnawmowyJn')
 
         self.assertEqual(tracks['items'], result)
-
 
     def test_some_invalid(self):
         self.spotify.playlist_items.side_effect = get_canned_tracks

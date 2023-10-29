@@ -19,6 +19,7 @@ config_defaults = {
     "max_age": "3 days",
     "include_zero_timestamps": True,
     "playlists": {},
+    "oldest_timestamp": None,
 }
 
 
@@ -185,15 +186,7 @@ class Playlists:
                 elif list_name.startswith(exclude_prefix):
                     exclude_lists.append(playlist)
 
-        max_age = "NO_MAX_AGE"
-        try:
-            max_age = self.config.get("max_age", "NO_MAX_AGE")
-
-            oldest_timestamp = datetime.datetime.now() - datetime.timedelta(
-                seconds=Duration(max_age).to_seconds()
-            )
-        except Exception as e:
-            raise PlaylistConfigException(f"Could not parse track age {max_age}", e)
+        oldest_timestamp = self._get_oldest_timestamp()
 
         # TODO: Optionally create if it doesn't exist
         if not target_list:
@@ -217,6 +210,28 @@ class Playlists:
         for id_batch in batched(playlist_ids, 100):
             self.logger.debug(f"Batch size: {len(id_batch)}")
             self.spotify.playlist_add_items(target_list["id"], id_batch)
+
+    def _get_oldest_timestamp(self):
+        cfg_oldest_timestamp = self.config.get("oldest_timestamp")
+
+        if cfg_oldest_timestamp:
+            try:
+                return datetime.datetime.strptime(
+                    cfg_oldest_timestamp, ISO_8601_TIMESTAMP_FORMAT
+                )
+            except Exception as e:
+                self.logger.warning(f"Could not parse oldest_timestamp value {cfg_oldest_timestamp}",
+                                    exc_info=True)
+
+        max_age = "NO_MAX_AGE"
+        try:
+            max_age = self.config.get("max_age", "NO_MAX_AGE")
+
+            return datetime.datetime.now() - datetime.timedelta(
+                seconds=Duration(max_age).to_seconds()
+            )
+        except Exception as e:
+            raise PlaylistConfigException(f"Could not parse track age {max_age}", e)
 
     def randomize_playlists(self, playlists: List[str]) -> Dict[str, PlaylistResult]:
         """Replaces the tracks in the target lists with a randomized version of the same tracks.
