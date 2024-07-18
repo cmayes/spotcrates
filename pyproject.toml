@@ -15,7 +15,7 @@ types-appdirs = "^1.4.3.5"
 durations-nlp = "^1.0.1"
 tomli-w = "^1.0.0"
 tomli = "^2.0.1"
-setuptools = "^68.2.2"
+setuptools = ">=68.2.2,<71.0.0"
 cython = "^3.0.4"
 
 [tool.poetry.group.dev.dependencies]
