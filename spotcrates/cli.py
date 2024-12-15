@@ -54,6 +54,11 @@ def print_commands():
 
 
 def append_daily_mix(config: Dict[str, Any], args: argparse.Namespace):
+    """ Appends the daily mix to the target playlist.
+
+    :param config: The configuration dictionary.
+    :param args: The arguments namespace.
+    """
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("playlists"))
