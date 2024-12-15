@@ -2,6 +2,7 @@ import unittest
 
 from spotcrates.common import truncate_long_value, ValueFilter
 
+# ruff: noqa: E712
 
 # truncate_long_value
 

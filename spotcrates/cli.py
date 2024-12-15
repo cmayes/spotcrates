@@ -224,7 +224,7 @@ def parse_cmdline(argv: List):
     args = None
     try:
         args = parser.parse_args(argv)
-    except IOError as e:
+    except OSError as e:
         logger.warning("Problems reading file:", e)
         parser.print_help()
         return args, 2

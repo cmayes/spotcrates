@@ -229,7 +229,7 @@ class Playlists:
                 return datetime.datetime.strptime(
                     cfg_oldest_timestamp, ISO_8601_TIMESTAMP_FORMAT
                 )
-            except Exception as e:
+            except Exception:
                 self.logger.warning(f"Could not parse oldest_timestamp value {cfg_oldest_timestamp}",
                                     exc_info=True)
 
@@ -363,7 +363,7 @@ class Playlists:
             return track_timestamp >= oldest_timestamp
 
     def _get_playlist_track_ids(self, *args: str) -> Set[str]:
-        track_ids: Set[str] = set([])
+        track_ids: Set[str] = set()
         for playlist_id in args:
             playlist_items = self._filter_for_tracks(playlist_id)
 

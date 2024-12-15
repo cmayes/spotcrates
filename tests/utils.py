@@ -4,7 +4,7 @@ from spotcrates.filters import FieldName
 
 
 def file_json(file_loc):
-    with open(file_loc, "r") as playlist_list_handle:
+    with open(file_loc) as playlist_list_handle:
         return json.load(playlist_list_handle)
 
 
