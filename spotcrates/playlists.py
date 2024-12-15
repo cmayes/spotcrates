@@ -156,6 +156,9 @@ class Playlists:
         """
         try:
             playlist_tracks = self._get_playlist_id_tracks(playlist["id"])
+            if not playlist_tracks:
+                self.logger.warning(f"No tracks found for playlist '{playlist['name']}'")
+                return PlaylistResult.FAILURE
             random.shuffle(playlist_tracks)
             self._add_tracks_to_playlist(playlist, playlist_tracks, replace_playlist=True)
             return PlaylistResult.SUCCESS
