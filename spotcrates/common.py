@@ -49,13 +49,15 @@ def get_all_items(spotify: Spotify, first_page: Dict[str, Any]):
         while next_page:
             all_items.extend(next_page["items"])
             next_page = spotify.next(next_page)
-    except Exception:
-        logging.warning("Problems paging given Spotify items list", exc_info=True)
+    except TimeoutError:
+        logging.info("Timeout error encountered while paging Spotify items")
+    except Exception as e:
+        logging.warning(f"Problems paging given Spotify items list: {e}", exc_info=True)
 
     return [item for item in all_items if item is not None]
 
 
-def truncate_long_value(full_value: str, length: int, trim_tail: bool = True) -> str:
+def truncate_long_value(full_value: str | None, length: int, trim_tail: bool = True) -> str:
     """Returns the given value truncated from the start of the value so that it is at most the given length.
 
     :param full_value: The value to trim.
@@ -139,3 +141,15 @@ def get_config(config_file: Path):
         return {}
 
 
+class ValueFilter:
+    def __init__(self, includes: list[str] | None = None, excludes: list[str] | None = None):
+        self._includes = includes
+        self._excludes = excludes
+
+    def include(self, value: str) -> bool:
+        if self._excludes and value in self._excludes:
+            return False
+        return not self._includes or value in self._includes
+
+    def exclude(self, value: str) -> bool:
+        return not self.include(value)

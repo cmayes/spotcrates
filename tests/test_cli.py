@@ -1,6 +1,6 @@
 import unittest
 
-from spotcrates.cli import parse_cmdline
+from spotcrates.cli import parse_cmdline, playlist_sets
 
 
 class ArgparseTestCase(unittest.TestCase):
@@ -48,3 +48,21 @@ class ArgparseTestCase(unittest.TestCase):
         self.assertEqual('test-command', args.command)
         self.assertTrue(args.randomize)
         self.assertSequenceEqual(['arg1', 'arg2', 'arg3'], args.arguments)
+
+
+# playlist_sets
+
+def test_playlist_sets():
+    assert playlist_sets("a,b,c") == ["a", "b", "c"]
+
+def test_playlist_sets_pipes():
+    assert playlist_sets("a|b|c") == ["a", "b", "c"]
+
+def test_playlist_sets_pipes_and_commas():
+    assert playlist_sets("a|b,c") == ["a", "b", "c"]
+
+def test_playlist_sets_blank():
+    assert playlist_sets("") == [""]
+
+def test_playlist_sets_none():
+    assert playlist_sets(None) == [""]
