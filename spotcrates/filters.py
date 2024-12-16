@@ -65,9 +65,9 @@ class FilterLookup(BaseLookup):
 
     def eval_filter_type(self, filter_type) -> FilterType:
         filter_type_type = type(filter_type)
-        if filter_type_type == FilterType:
+        if filter_type_type is FilterType:
             return filter_type
-        elif filter_type_type == str:
+        elif filter_type_type is str:
             return self.find(filter_type)
         else:
             raise InvalidFilterException(f"Invalid filter type {filter_type_type}")
@@ -90,9 +90,9 @@ class FieldLookup(BaseLookup):
 
     def eval_field_name(self, field_name):
         field_name_type = type(field_name)
-        if field_name_type == FieldName:
+        if field_name_type is FieldName:
             return field_name
-        elif field_name_type == str:
+        elif field_name_type is str:
             return self.find(field_name)
         else:
             raise InvalidFilterException(f"Invalid field name type {field_name_type}")
@@ -238,9 +238,9 @@ class SortType(Enum):
 class SortLookup(BaseLookup):
     def eval_sort_type(self, sort_type):
         sort_type_type = type(sort_type)
-        if sort_type_type == SortType:
+        if sort_type_type is SortType:
             return sort_type
-        elif sort_type_type == str:
+        elif sort_type_type is str:
             return self.find(sort_type)
         else:
             raise InvalidFilterException(f"Invalid sort type {sort_type_type}")

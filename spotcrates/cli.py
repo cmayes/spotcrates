@@ -6,13 +6,15 @@ CLI runner for Spotify automation.
 
 import argparse
 import logging
+import re
 import sys
 from typing import Dict, Any, List
 
 import pygtrie
 import tomli_w
 
-from spotcrates.common import BaseLookup, truncate_long_value, get_spotify_handle, DEFAULT_CONFIG_FILE, get_config
+from spotcrates.common import BaseLookup, truncate_long_value, get_spotify_handle, DEFAULT_CONFIG_FILE, get_config, \
+    ValueFilter
 from spotcrates.filters import FieldName
 
 import importlib.metadata
@@ -28,6 +30,8 @@ from spotcrates.playlists import Playlists, PlaylistResult
 # Turn down noisy third-party debug logs
 logging.getLogger('spotipy').setLevel(logging.INFO)
 logging.getLogger('urllib3').setLevel(logging.INFO)
+# Logs on error for 404s (which we don't want to see)
+logging.getLogger('spotipy.client').setLevel(logging.FATAL)
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +48,8 @@ COMMAND_DESCRIPTION = f"""
 {'subscriptions':<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
 """
 
-# LOG_FORMAT = "%(levelname)s (%(name)s): %(message)s"
-LOG_FORMAT = "%(message)s"
+LOG_FORMAT = "%(levelname)s (%(name)s): %(message)s"
+# LOG_FORMAT = "%(message)s"
 
 
 def print_commands():
@@ -69,7 +73,8 @@ def append_recent_subscriptions(config: Dict[str, Any], args: argparse.Namespace
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("subscriptions"))
-    playlists.append_recent_subscriptions(args.randomize, args.target)
+    playlist_set_filter = ValueFilter(includes=args.include_playlist_sets, excludes=args.exclude_playlist_sets)
+    playlists.append_recent_subscriptions(args.randomize, args.target, playlist_set_filter)
 
 
 def randomize_lists(config: Dict[str, Any], args: argparse.Namespace):
@@ -149,6 +154,13 @@ initial_config = {
 }
 
 
+def playlist_sets(value: str | None) -> list[str]:
+    """Parses the playlist groups from the command line."""
+    if not value:
+        return [""]
+    return [clean.strip() for clean in re.split("[,|]", value)]
+
+
 def init_config(args: argparse.Namespace):
     config_file = args.config_file
 
@@ -188,16 +200,21 @@ def parse_cmdline(argv: List):
     parser.add_argument("-c", "--config_file",
                         help=f"The location of the config file (default: {DEFAULT_CONFIG_FILE})",
                         default=DEFAULT_CONFIG_FILE, type=Path)
-    parser.add_argument("-s", "--sort_fields", help="The fields to sort against, applied in order")
     parser.add_argument("-f", "--filters", help="Filters to apply to the list")
+    parser.add_argument("-e", "--exclude_playlist_sets", type=playlist_sets,
+                        action="append", help="The playlist sets to exclude. Takes precedence over include")
+    parser.add_argument("-i", "--include_playlist_sets", type=playlist_sets,
+                        action="append", help="The playlist sets to include. Includes all if not specified")
     parser.add_argument("-r", "--randomize", help="Randomize the target list", action='store_true')
     parser.add_argument('--version', action='version', version=__version__)
+    parser.add_argument("-s", "--sort_fields", help="The fields to sort against, applied in order")
     parser.add_argument("-t", "--target",
                         help="Specify the target name of the operation (overrides any default value)")
     parser.add_argument("command", metavar="COMMAND",
                         help=f"The command to run (one of {','.join(COMMANDS)})")
     parser.add_argument("arguments", metavar='ARGUMENTS', nargs='*',
                         help="the arguments to the command")
+    # noinspection PyTypeChecker
     parser.add_argument('-log',
                         '--loglevel',
                         default='info',
@@ -207,7 +224,7 @@ def parse_cmdline(argv: List):
     args = None
     try:
         args = parser.parse_args(argv)
-    except IOError as e:
+    except OSError as e:
         logger.warning("Problems reading file:", e)
         parser.print_help()
         return args, 2
