@@ -1,5 +1,10 @@
 # (Unreleased)
 
+# Version 0.7.1
+
+## Added
+- Added -i and -e to include and exclude (respectively) playlist sets.
+
 # Version 0.7.0
 
 ## Added
