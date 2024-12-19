@@ -1,4 +1,5 @@
 import datetime
+import itertools
 import logging
 from abc import ABC, abstractmethod
 from itertools import islice
@@ -153,3 +154,9 @@ class ValueFilter:
 
     def exclude(self, value: str) -> bool:
         return not self.include(value)
+
+    @classmethod
+    def from_nested(cls, includes: list[list[str]] | None = None, excludes: list[list[str]] | None = None):
+        flat_includes = list(itertools.chain.from_iterable(includes)) if includes else includes
+        flat_excludes = list(itertools.chain.from_iterable(excludes)) if excludes else excludes
+        return cls(flat_includes, flat_excludes)

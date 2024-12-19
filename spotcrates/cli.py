@@ -73,7 +73,8 @@ def append_recent_subscriptions(config: Dict[str, Any], args: argparse.Namespace
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("subscriptions"))
-    playlist_set_filter = ValueFilter(includes=args.include_playlist_sets, excludes=args.exclude_playlist_sets)
+    playlist_set_filter = ValueFilter.from_nested(
+        includes=args.include_playlist_sets, excludes=args.exclude_playlist_sets)
     playlists.append_recent_subscriptions(args.randomize, args.target, playlist_set_filter)
 
 

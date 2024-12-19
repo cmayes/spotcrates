@@ -43,6 +43,16 @@ def test_explicit_include_exclude():
 def test_explicit_include_exclude_precedence():
     assert ValueFilter(includes=["anything"], excludes=["anything"]).include("anything") == False
 
+def test_nested_include():
+    assert ValueFilter.from_nested(includes=[["anything"]]).include("anything") == True
+    assert ValueFilter.from_nested(includes=[["anything"]]).include("nothing") == False
+
+def test_nested_include_multi():
+    assert ValueFilter.from_nested(includes=[["anything", "nothing"]]).include("anything") == True
+    assert ValueFilter.from_nested(includes=[["anything", "nothing"]]).include("nothing") == True
+    assert ValueFilter.from_nested(includes=[["anything", "nothing"]]).include("something") == False
+
+
 # exclude
 def test_empty_value_filter_exclude():
     assert ValueFilter().exclude("anything") == False
@@ -53,3 +63,12 @@ def test_explicit_include_exclude_exclude():
 
 def test_explicit_include_exclude_exclude_precedence():
     assert ValueFilter(includes=["anything"], excludes=["anything"]).exclude("anything") == True
+
+def test_nested_exclude():
+    assert ValueFilter.from_nested(excludes=[["anything"]]).exclude("anything") == True
+    assert ValueFilter.from_nested(excludes=[["anything"]]).exclude("nothing") == False
+
+def test_nested_exclude_multi():
+    assert ValueFilter.from_nested(excludes=[["anything", "nothing"]]).exclude("anything") == True
+    assert ValueFilter.from_nested(excludes=[["anything", "nothing"]]).exclude("nothing") == True
+    assert ValueFilter.from_nested(excludes=[["anything", "nothing"]]).exclude("something") == False
