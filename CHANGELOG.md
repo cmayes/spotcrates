@@ -1,5 +1,10 @@
 # (Unreleased)
 
+# Version 0.7.2
+
+## Fixed
+- Fixed handling of nested lists of values for includes and excludes.
+
 # Version 0.7.1
 
 ## Added
