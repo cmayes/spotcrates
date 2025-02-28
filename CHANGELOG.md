@@ -1,5 +1,10 @@
 # (Unreleased)
 
+# Version 0.7.3
+
+## Fixed
+- Upgraded dependency versions to patch vulnerable spotipy version.
+
 # Version 0.7.2
 
 ## Fixed
