@@ -290,6 +290,21 @@ class Playlists:
             self.logger.warning("Problems copying list", exc_info=True)
             return PlaylistResult.FAILURE, None
 
+    def randomize_owned_playlists(self) -> Dict[str, PlaylistResult]:
+        """Randomizes all playlists owned by the current user.
+
+        Returns:
+            Dict mapping playlist names to their randomization results
+        """
+        results = {}
+        current_user_id = self.spotify.current_user()["id"]
+
+        for playlist in self.get_all_playlists():
+            if playlist["owner"]["id"] == current_user_id:
+                results[playlist["name"]] = self.randomize_playlist(playlist)
+
+        return results
+
     # ===Internal Methods=== #
 
     def _fetch_daily_tracks(self, dailies: List, exclude_ids: Iterable[str]):

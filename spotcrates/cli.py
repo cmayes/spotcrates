@@ -35,7 +35,7 @@ logging.getLogger('spotipy.client').setLevel(logging.FATAL)
 
 logger = logging.getLogger(__name__)
 
-COMMANDS = ["copy", "commands", "daily", "init-config", "list-playlists", "randomize", "subscriptions"]
+COMMANDS = ["copy", "commands", "daily", "init-config", "list-playlists", "randomize", "randomize-all", "subscriptions"]
 
 COMMAND_DESCRIPTION = f"""
 {'COMMAND NAME':<16} DESCRIPTION
@@ -45,6 +45,7 @@ COMMAND_DESCRIPTION = f"""
 {'init-config':<16} Initializes the configuration file. Uses the --config_file location as the target. Will not overwrite.
 {'list-playlists':<16} Prints a table describing your playlists.
 {'randomize':<16} Randomizes the playlists with the given names, IDs, or in the given collections.
+{'randomize-all':<16} Randomizes all playlists owned by the current user.
 {'subscriptions':<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
 """
 
@@ -79,17 +80,32 @@ def append_recent_subscriptions(config: Dict[str, Any], args: argparse.Namespace
 
 
 def randomize_lists(config: Dict[str, Any], args: argparse.Namespace):
-    arguments = args.arguments
-    if arguments:
-        sp = get_spotify_handle(config)
-        playlists = Playlists(sp, config.get("playlists"))
-        results = playlists.randomize_playlists(arguments)
+    sp = get_spotify_handle(config)
+    playlists = Playlists(sp, config.get("playlists"))
 
-        for item, result in results.items():
-            print(f"{item}: {result.label}")
+    if args.arguments:
+        results = playlists.randomize_playlists(args.arguments)
     else:
         logger.warning("No playlists specified; nothing to randomize")
         return 5
+
+    for item, result in results.items():
+        print(f"{item}: {result.label}")
+
+
+def randomize_all_lists(config: Dict[str, Any], args: argparse.Namespace):
+    sp = get_spotify_handle(config)
+    playlists = Playlists(sp, config.get("playlists"))
+
+    results = playlists.randomize_owned_playlists()
+    if results:
+        logger.debug(f"Randomizing {len(results)} playlists")
+    else:
+        logger.warning("No user-owned playlists found to randomize")
+        return 5
+
+    for item, result in results.items():
+        print(f"{item}: {result.label}")
 
 
 def copy_list(config: Dict[str, Any], args: argparse.Namespace):
@@ -184,10 +200,10 @@ class CommandLookup(BaseLookup):
         lookup["d"] = "daily"
         lookup["i"] = "init-config"
         lookup["l"] = "list-playlists"
+        lookup["randomize-a"] = "randomize-all"
         lookup["r"] = "randomize"
         lookup["s"] = "subscriptions"
         return lookup
-
 
 def parse_cmdline(argv: List):
     """
@@ -255,6 +271,8 @@ def main(argv=None):
         return list_playlists(config, args)
     elif command == "randomize":
         return randomize_lists(config, args)
+    elif command == "randomize-all":
+        return randomize_all_lists(config, args)
     elif command == "subscriptions":
         return append_recent_subscriptions(config, args)
     else:
