@@ -66,7 +66,7 @@ jobs:
           python-version: "3.11"
       - uses: Gr1N/setup-poetry@v8
         with:
-          poetry-version: "1.2.2"
+          poetry-version: "2.2.1"
       - uses: actions/cache@v3
         with:
           path: ~/.cache/pypoetry/virtualenvs
