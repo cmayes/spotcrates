@@ -17,6 +17,7 @@ tomli-w = "^1.0.0"
 tomli = "^2.0.1"
 setuptools = "^80.8.0"
 cython = "^3.0.4"
+poetry-core = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
