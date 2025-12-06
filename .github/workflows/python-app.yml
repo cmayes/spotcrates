@@ -49,6 +49,7 @@ jobs:
           COVERAGE_FILE: .coverage
       - name: Prepare coverage file for upload
         if: always()
+        shell: bash
         run: |
           # Ensure the file exists and is readable
           if [ -f ".coverage" ]; then
