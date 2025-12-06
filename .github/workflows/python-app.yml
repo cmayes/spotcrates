@@ -79,44 +79,73 @@ jobs:
         with:
           pattern: covdata-*
           path: artifacts
+          merge-multiple: true
+      - name: List workspace contents for debugging
+        run: |
+          echo "=== Workspace contents ==="
+          ls -la
+          echo "=== Checking for artifacts directory ==="
+          if [ -d "artifacts" ]; then
+            echo "Artifacts directory exists"
+            ls -laR artifacts/
+          else
+            echo "No artifacts directory found - no artifacts were downloaded"
+          fi
       - name: Combine and calculate total coverage
         run: |
           echo "Combining coverage data from all matrix jobs..."
           
-          # List downloaded artifacts
-          ls -la artifacts/ || echo "No artifacts directory found"
-          
-          # Create artifacts directory if it doesn't exist
-          mkdir -p artifacts
-          
-          # Check if we have any coverage files
-          if [ -d "artifacts" ] && [ "$(find artifacts -name '.coverage' -type f | wc -l)" -gt 0 ]; then
-            echo "Found $(find artifacts -name '.coverage' -type f | wc -l) coverage files"
-          
-            # Rename .coverage files so coverage.py can find them
-            find artifacts -name '.coverage' -type f -exec sh -c 'cp "$1" ".coverage.$(echo "$1" | tr "/" "-" | sed "s/^artifacts-//")"' _ {} \;
-          
-            # List the renamed files
-            ls -la .coverage.* || echo "No renamed coverage files"
-          
-            # Combine all .coverage.* files
-            python -m coverage combine
-          
-            # Generate the JSON report
-            python -m coverage json -o combined_coverage.json
-          
-            # Display the report
-            python -m coverage report
-          
-            # Extract the total percentage from the combined JSON
-            export TOTAL=$(python -c "import json;print(json.load(open('combined_coverage.json'))['totals']['percent_covered_display'])")
-          
-            echo "total=$TOTAL" >> $GITHUB_ENV
-            echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No coverage files found in artifacts"
+          # Check if artifacts directory exists and has content
+          if [ ! -d "artifacts" ] || [ -z "$(ls -A artifacts 2>/dev/null)" ]; then
+            echo "ERROR: No artifacts were downloaded. This likely means:"
+            echo "  1. The test jobs failed before uploading coverage"
+            echo "  2. The artifact names don't match the pattern 'covdata-*'"
+            echo "  3. The artifacts expired or were deleted"
+            echo ""
+            echo "Please check the 'tests' job logs to ensure coverage data was generated."
             exit 1
           fi
+          
+          # Find all .coverage files
+          coverage_files=$(find artifacts -name '.coverage' -type f)
+          file_count=$(echo "$coverage_files" | grep -c '.coverage' || echo "0")
+          
+          if [ "$file_count" -eq 0 ]; then
+            echo "ERROR: Found artifacts but no .coverage files in them"
+            echo "Artifacts contents:"
+            ls -laR artifacts/
+            exit 1
+          fi
+          
+          echo "Found $file_count coverage file(s)"
+          
+          # Rename .coverage files so coverage.py can find them
+          counter=1
+          find artifacts -name '.coverage' -type f | while read -r file; do
+            cp "$file" ".coverage.$counter"
+            echo "Copied $file to .coverage.$counter"
+            counter=$((counter + 1))
+          done
+          
+          # List the renamed files
+          echo "=== Renamed coverage files ==="
+          ls -la .coverage.* 2>/dev/null || echo "No renamed coverage files found"
+          
+          # Combine all .coverage.* files
+          echo "=== Combining coverage files ==="
+          python -m coverage combine
+          
+          # Generate the JSON report
+          python -m coverage json -o combined_coverage.json
+          
+          # Display the report
+          python -m coverage report
+          
+          # Extract the total percentage from the combined JSON
+          export TOTAL=$(python -c "import json;print(json.load(open('combined_coverage.json'))['totals']['percent_covered_display'])")
+          
+          echo "total=$TOTAL" >> $GITHUB_ENV
+          echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
       - name: Make badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
