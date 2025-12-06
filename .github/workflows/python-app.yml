@@ -45,13 +45,12 @@ jobs:
         run: |
           poetry run coverage run -m pytest 
           poetry run coverage report -m
-          poetry run coverage json
       - name: Upload coverage data
         uses: actions/upload-artifact@v5
         with:
           # Create a unique name for each artifact using matrix variables
           name: covdata-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
-          path: coverage.json
+          path: .coverage
           overwrite: true
 
   coverage:
@@ -72,27 +71,29 @@ jobs:
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
-      - name: Install dependencies and coverage tool
+      - name: Install dependencies
         run: |
           poetry install
-          # We need to install the 'coverage' tool globally to run 'coverage combine'
-          pip install coverage
       - name: Download all coverage data
         uses: actions/download-artifact@v6
         with:
-          # CORRECTED YAML SYNTAX: inputs must be on separate lines
           pattern: covdata-*
           path: artifacts
       - name: Combine and calculate total coverage
         run: |
           echo "Combining coverage data from all matrix jobs..."
           
-          # The download action puts all artifacts into 'artifacts' with subfolders
-          # Use 'coverage combine' with --json-path to recursively find and process all coverage.json files
-          python -m coverage combine --json-path "artifacts/**/coverage.json"
+          # Rename .coverage files so coverage.py can find them
+          find artifacts -name '.coverage' -exec sh -c 'cp "$1" ".coverage.$(dirname "$1" | tr / -)"' _ {} \;
           
-          # Generate the report output to a new JSON file
+          # Combine all .coverage.* files
+          python -m coverage combine
+          
+          # Generate the JSON report
           python -m coverage json -o combined_coverage.json
+          
+          # Display the report
+          python -m coverage report
           
           # Extract the total percentage from the combined JSON
           export TOTAL=$(python -c "import json;print(json.load(open('combined_coverage.json'))['totals']['percent_covered_display'])")
