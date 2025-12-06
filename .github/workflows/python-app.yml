@@ -49,7 +49,7 @@ jobs:
       - name: Upload coverage data
         uses: actions/upload-artifact@v5
         with:
-          # Modified: Create a unique name for each artifact using matrix variables
+          # Create a unique name for each artifact using matrix variables
           name: covdata-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
           path: coverage.json
           overwrite: true
@@ -80,8 +80,8 @@ jobs:
       - name: Download all coverage data
         uses: actions/download-artifact@v6
         with:
-          # Download all artifacts that start with 'covdata-'
-          name: covdata
+          # CORRECTED YAML SYNTAX: inputs must be on separate lines
+          pattern: covdata-*
           path: artifacts
       - name: Combine and calculate total coverage
         run: |
