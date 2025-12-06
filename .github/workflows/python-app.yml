@@ -144,6 +144,15 @@ jobs:
           
           echo "Found $file_count coverage file(s)"
           
+          # Create a coverage configuration for path mapping
+          cat > .coveragerc << EOF
+          [paths]
+          source =
+              spotcrates/
+              */spotcrates/spotcrates/
+              */work/spotcrates/spotcrates/spotcrates/
+          EOF
+          
           # Rename .coverage files so coverage.py can find them
           counter=1
           find artifacts -name '.coverage' -type f | while read -r file; do
@@ -156,9 +165,9 @@ jobs:
           echo "=== Renamed coverage files ==="
           ls -la .coverage.* 2>/dev/null || echo "No renamed coverage files found"
           
-          # Combine all .coverage.* files
+          # Combine all .coverage.* files with path mapping
           echo "=== Combining coverage files ==="
-          poetry run coverage combine
+          poetry run coverage combine --keep
           
           # Generate the JSON report
           poetry run coverage json -o combined_coverage.json
