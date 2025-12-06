@@ -158,13 +158,13 @@ jobs:
           
           # Combine all .coverage.* files
           echo "=== Combining coverage files ==="
-          python -m coverage combine
+          poetry run coverage combine
           
           # Generate the JSON report
-          python -m coverage json -o combined_coverage.json
+          poetry run coverage json -o combined_coverage.json
           
           # Display the report
-          python -m coverage report
+          poetry run coverage report
           
           # Extract the total percentage from the combined JSON
           export TOTAL=$(python -c "import json;print(json.load(open('combined_coverage.json'))['totals']['percent_covered_display'])")
