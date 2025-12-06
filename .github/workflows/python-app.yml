@@ -47,13 +47,27 @@ jobs:
           poetry run coverage report -m
         env:
           COVERAGE_FILE: .coverage
+      - name: Prepare coverage file for upload
+        if: always()
+        run: |
+          # Ensure the file exists and is readable
+          if [ -f ".coverage" ]; then
+            echo "Coverage file found"
+            ls -lh .coverage
+            # Copy to a temporary location with a clear name
+            cp .coverage coverage-data
+            ls -lh coverage-data
+          else
+            echo "ERROR: .coverage file not found"
+            exit 1
+          fi
       - name: Upload coverage data
         uses: actions/upload-artifact@v5
         if: always()
         with:
           # Create a unique name for each artifact using matrix variables
           name: covdata-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
-          path: ${{ github.workspace }}/.coverage
+          path: coverage-data
           if-no-files-found: error
           overwrite: true
 
