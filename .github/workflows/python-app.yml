@@ -56,9 +56,12 @@ jobs:
             ls -lh .coverage
             # Create a directory and copy the file there
             mkdir -p coverage_artifacts
-            cp .coverage coverage_artifacts/.coverage
+            cp -v .coverage coverage_artifacts/.coverage
+            echo "Copy command exit code: $?"
             echo "Contents of coverage_artifacts:"
-            ls -lh coverage_artifacts/
+            ls -lha coverage_artifacts/
+            echo "File count in coverage_artifacts:"
+            find coverage_artifacts -type f | wc -l
           else
             echo "ERROR: .coverage file not found"
             exit 1
@@ -69,7 +72,7 @@ jobs:
         with:
           # Create a unique name for each artifact using matrix variables
           name: covdata-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
-          path: coverage_artifacts/
+          path: coverage_artifacts
           if-no-files-found: error
           overwrite: true
 
