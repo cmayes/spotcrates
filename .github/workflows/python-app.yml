@@ -45,12 +45,24 @@ jobs:
         run: |
           poetry run coverage run -m pytest 
           poetry run coverage report -m
+      - name: Debug coverage file location
+        run: |
+          echo "=== Looking for coverage files ==="
+          find . -name '.coverage*' -o -name 'coverage.*'
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Directory contents ==="
+          ls -la
       - name: Upload coverage data
         uses: actions/upload-artifact@v5
+        if: always()
         with:
           # Create a unique name for each artifact using matrix variables
           name: covdata-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
-          path: .coverage
+          path: |
+            .coverage
+            .coverage.*
+          if-no-files-found: warn
           overwrite: true
 
   coverage:
