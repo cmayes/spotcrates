@@ -49,7 +49,8 @@ jobs:
       - name: Upload coverage data
         uses: actions/upload-artifact@v5
         with:
-          name: covdata
+          # Modified: Create a unique name for each artifact using matrix variables
+          name: covdata-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
           path: coverage.json
           overwrite: true
 
@@ -71,16 +72,31 @@ jobs:
         with:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
-      - name: Install dependencies
+      - name: Install dependencies and coverage tool
         run: |
           poetry install
-      - name: Download coverage data
+          # We need to install the 'coverage' tool globally to run 'coverage combine'
+          pip install coverage
+      - name: Download all coverage data
         uses: actions/download-artifact@v6
         with:
+          # Download all artifacts that start with 'covdata-'
           name: covdata
-      - name: Combine
+          path: artifacts
+      - name: Combine and calculate total coverage
         run: |
-          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "Combining coverage data from all matrix jobs..."
+          
+          # The download action puts all artifacts into 'artifacts' with subfolders
+          # Use 'coverage combine' with --json-path to recursively find and process all coverage.json files
+          python -m coverage combine --json-path "artifacts/**/coverage.json"
+          
+          # Generate the report output to a new JSON file
+          python -m coverage json -o combined_coverage.json
+          
+          # Extract the total percentage from the combined JSON
+          export TOTAL=$(python -c "import json;print(json.load(open('combined_coverage.json'))['totals']['percent_covered_display'])")
+          
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
       - name: Make badge
