@@ -73,6 +73,7 @@ jobs:
           # Create a unique name for each artifact using matrix variables
           name: covdata-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.poetry-version }}
           path: coverage_artifacts
+          include-hidden-files: true
           if-no-files-found: error
           overwrite: true
 
