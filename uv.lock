@@ -674,7 +674,7 @@ wheels = [
 
 [[package]]
 name = "spotcrates"
-version = "0.7.4"
+version = "0.8.1"
 source = { editable = "." }
 dependencies = [
     { name = "appdirs" },
