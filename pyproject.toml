@@ -1,6 +1,6 @@
 [project]
 name = "spotcrates"
-version = "0.8.1"
+version = "0.8.2"
 description = ""
 authors = [{name = "Chris Mayes", email = "cmayes@cmay.es"}]
 readme = "README.md"
