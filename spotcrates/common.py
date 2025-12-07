@@ -18,12 +18,11 @@ DEFAULT_CONFIG_FILE = Path(DEFAULT_CONFIG_DIR, "spotcrates_config.toml")
 DEFAULT_CACHE_DIR = user_cache_dir("spotcrates")
 DEFAULT_AUTH_CACHE_FILE = Path(DEFAULT_CACHE_DIR, "spotcrates_auth_cache")
 DEFAULT_AUTH_SCOPES = ["playlist-modify-private", "playlist-read-private"]
-DEFAULT_REDIRECT_URI = 'http://127.0.0.1:5000/'
+DEFAULT_REDIRECT_URI = "http://127.0.0.1:5000/"
 DEFAULT_TARGET = "default_target"
 ISO_8601_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-ZERO_TIMESTAMP = datetime.datetime.strptime(
-    '1970-01-01T00:00:00Z', ISO_8601_TIMESTAMP_FORMAT
-)
+ZERO_TIMESTAMP = datetime.datetime.strptime("1970-01-01T00:00:00Z", ISO_8601_TIMESTAMP_FORMAT)
+
 
 class NotFoundException(Exception):
     pass
@@ -90,9 +89,7 @@ class BaseLookup(ABC):
         found_command = self.lookup.longest_prefix(lookup_val)
 
         if found_command:
-            self.logger.debug(
-                "Got %s (%s) for %s", found_command.value, found_command.key, lookup_val
-            )
+            self.logger.debug("Got %s (%s) for %s", found_command.value, found_command.key, lookup_val)
             return found_command.value
         else:
             raise NotFoundException(f"No value for {lookup_val}")
@@ -119,9 +116,7 @@ def get_spotify_handle(config: Dict[str, Dict[str, Any]]):
             scope=auth_scopes,
         )
     else:
-        auth_manager = spotipy.oauth2.SpotifyOAuth(
-            cache_handler=cache_handler, scope=auth_scopes
-        )
+        auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=cache_handler, scope=auth_scopes)
     return spotipy.Spotify(auth_manager=auth_manager)
 
 

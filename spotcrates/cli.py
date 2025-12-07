@@ -13,13 +13,12 @@ from typing import Dict, Any, List
 import pygtrie
 import tomli_w
 
-from spotcrates.common import BaseLookup, truncate_long_value, get_spotify_handle, DEFAULT_CONFIG_FILE, get_config, \
-    ValueFilter
+from spotcrates.common import BaseLookup, truncate_long_value, get_spotify_handle, DEFAULT_CONFIG_FILE, get_config, ValueFilter
 from spotcrates.filters import FieldName
 
 import importlib.metadata
 
-__version__ = importlib.metadata.version('spotcrates')
+__version__ = importlib.metadata.version("spotcrates")
 
 __author__ = "cmayes"
 
@@ -28,25 +27,25 @@ from pathlib import Path
 from spotcrates.playlists import Playlists, PlaylistResult
 
 # Turn down noisy third-party debug logs
-logging.getLogger('spotipy').setLevel(logging.INFO)
-logging.getLogger('urllib3').setLevel(logging.INFO)
+logging.getLogger("spotipy").setLevel(logging.INFO)
+logging.getLogger("urllib3").setLevel(logging.INFO)
 # Logs on error for 404s (which we don't want to see)
-logging.getLogger('spotipy.client').setLevel(logging.FATAL)
+logging.getLogger("spotipy.client").setLevel(logging.FATAL)
 
 logger = logging.getLogger(__name__)
 
 COMMANDS = ["copy", "commands", "daily", "init-config", "list-playlists", "randomize", "randomize-all", "subscriptions"]
 
 COMMAND_DESCRIPTION = f"""
-{'COMMAND NAME':<16} DESCRIPTION
-{'commands':<16} Prints this command list.
-{'copy':<16} Copies a playlist into a new playlist. You may optionally specify a destination playlist name.
-{'daily':<16} Add "Daily Mix" entries to the end of the target playlist, filtering for excluded entries.
-{'init-config':<16} Initializes the configuration file. Uses the --config_file location as the target. Will not overwrite.
-{'list-playlists':<16} Prints a table describing your playlists.
-{'randomize':<16} Randomizes the playlists with the given names, IDs, or in the given collections.
-{'randomize-all':<16} Randomizes all playlists owned by the current user.
-{'subscriptions':<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
+{"COMMAND NAME":<16} DESCRIPTION
+{"commands":<16} Prints this command list.
+{"copy":<16} Copies a playlist into a new playlist. You may optionally specify a destination playlist name.
+{"daily":<16} Add "Daily Mix" entries to the end of the target playlist, filtering for excluded entries.
+{"init-config":<16} Initializes the configuration file. Uses the --config_file location as the target. Will not overwrite.
+{"list-playlists":<16} Prints a table describing your playlists.
+{"randomize":<16} Randomizes the playlists with the given names, IDs, or in the given collections.
+{"randomize-all":<16} Randomizes all playlists owned by the current user.
+{"subscriptions":<16} Add new tracks from configured playlists to the target playlist, filtering for excluded entries.
 """
 
 LOG_FORMAT = "%(levelname)s (%(name)s): %(message)s"
@@ -59,7 +58,7 @@ def print_commands():
 
 
 def append_daily_mix(config: Dict[str, Any], args: argparse.Namespace):
-    """ Appends the daily mix to the target playlist.
+    """Appends the daily mix to the target playlist.
 
     :param config: The configuration dictionary.
     :param args: The arguments namespace.
@@ -74,8 +73,7 @@ def append_recent_subscriptions(config: Dict[str, Any], args: argparse.Namespace
     sp = get_spotify_handle(config)
 
     playlists = Playlists(sp, config.get("subscriptions"))
-    playlist_set_filter = ValueFilter.from_nested(
-        includes=args.include_playlist_sets, excludes=args.exclude_playlist_sets)
+    playlist_set_filter = ValueFilter.from_nested(includes=args.include_playlist_sets, excludes=args.exclude_playlist_sets)
     playlists.append_recent_subscriptions(args.randomize, args.target, playlist_set_filter)
 
 
@@ -130,9 +128,7 @@ def list_playlists(config: Dict[str, Any], args: argparse.Namespace):
     playlists = Playlists(sp, config.get("playlists"))
 
     try:
-        all_playlists = playlists.list_all_playlists(
-            filters=args.filters, sort_fields=args.sort_fields
-        )
+        all_playlists = playlists.list_all_playlists(filters=args.filters, sort_fields=args.sort_fields)
     except Exception as e:
         logger.warning(f"Problems listing playlists: {e}")
         return 1
@@ -150,24 +146,16 @@ def list_playlists(config: Dict[str, Any], args: argparse.Namespace):
 
 # The basic config structure for the CLI
 initial_config = {
-    "spotify": {
-        "client_id": "NO_SPOTIFY_CLIENT_ID",
-        "client_secret": "NO_SPOTIFY_CLIENT_ID"
-    },
-    "playlists": {
-        "daily_mix_target": "Now",
-        "daily_mix_prefix": "Daily Mix",
-        "daily_mix_excludes": "Overplayed"
-    },
+    "spotify": {"client_id": "NO_SPOTIFY_CLIENT_ID", "client_secret": "NO_SPOTIFY_CLIENT_ID"},
+    "playlists": {"daily_mix_target": "Now", "daily_mix_prefix": "Daily Mix", "daily_mix_excludes": "Overplayed"},
     "subscriptions": {
         "subscriptions_target": "NewSubscriptions",
         "max_age": "3 days",
         "playlists": {
             "noisy": ["2uiYiQFpynkWCpIXcBGir9", "37i9dQZF1DX8gDIpdqp1XJ", "3JEvwuKbVKoggEA75gWqET"],
-            "jazz": ["37i9dQZF1DX7YCknf2jT6s", "37i9dQZF1DWUb0uBnlJuTi", "4xRrCdkn4r5lrDOElek5oC",
-                     "2puFFdGTID0iJdQtjLvhal"]
-        }
-    }
+            "jazz": ["37i9dQZF1DX7YCknf2jT6s", "37i9dQZF1DWUb0uBnlJuTi", "4xRrCdkn4r5lrDOElek5oC", "2puFFdGTID0iJdQtjLvhal"],
+        },
+    },
 }
 
 
@@ -192,7 +180,6 @@ def init_config(args: argparse.Namespace):
 
 
 class CommandLookup(BaseLookup):
-
     def _init_lookup(self):
         lookup = pygtrie.CharTrie()
         lookup["cop"] = "copy"
@@ -205,6 +192,7 @@ class CommandLookup(BaseLookup):
         lookup["s"] = "subscriptions"
         return lookup
 
+
 def parse_cmdline(argv: List):
     """
     Returns the parsed argument list and return code.
@@ -214,30 +202,43 @@ def parse_cmdline(argv: List):
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config_file",
-                        help=f"The location of the config file (default: {DEFAULT_CONFIG_FILE})",
-                        default=DEFAULT_CONFIG_FILE, type=Path)
+    parser.add_argument(
+        "-c",
+        "--config_file",
+        help=f"The location of the config file (default: {DEFAULT_CONFIG_FILE})",
+        default=DEFAULT_CONFIG_FILE,
+        type=Path,
+    )
     parser.add_argument("-f", "--filters", help="Filters to apply to the list")
-    parser.add_argument("-e", "--exclude_playlist_sets", type=playlist_sets,
-                        action="append", help="The playlist sets to exclude. Takes precedence over include")
-    parser.add_argument("-i", "--include_playlist_sets", type=playlist_sets,
-                        action="append", help="The playlist sets to include. Includes all if not specified")
-    parser.add_argument("-r", "--randomize", help="Randomize the target list", action='store_true')
-    parser.add_argument('--version', action='version', version=__version__)
+    parser.add_argument(
+        "-e",
+        "--exclude_playlist_sets",
+        type=playlist_sets,
+        action="append",
+        help="The playlist sets to exclude. Takes precedence over include",
+    )
+    parser.add_argument(
+        "-i",
+        "--include_playlist_sets",
+        type=playlist_sets,
+        action="append",
+        help="The playlist sets to include. Includes all if not specified",
+    )
+    parser.add_argument("-r", "--randomize", help="Randomize the target list", action="store_true")
+    parser.add_argument("--version", action="version", version=__version__)
     parser.add_argument("-s", "--sort_fields", help="The fields to sort against, applied in order")
-    parser.add_argument("-t", "--target",
-                        help="Specify the target name of the operation (overrides any default value)")
-    parser.add_argument("command", metavar="COMMAND",
-                        help=f"The command to run (one of {','.join(COMMANDS)})")
-    parser.add_argument("arguments", metavar='ARGUMENTS', nargs='*',
-                        help="the arguments to the command")
+    parser.add_argument("-t", "--target", help="Specify the target name of the operation (overrides any default value)")
+    parser.add_argument("command", metavar="COMMAND", help=f"The command to run (one of {','.join(COMMANDS)})")
+    parser.add_argument("arguments", metavar="ARGUMENTS", nargs="*", help="the arguments to the command")
     # noinspection PyTypeChecker
-    parser.add_argument('-log',
-                        '--loglevel',
-                        default='info',
-                        type=str.upper,
-                        choices=logging._nameToLevel.keys(),
-                        help='Provide logging level. Example: --loglevel debug, default is info')
+    parser.add_argument(
+        "-log",
+        "--loglevel",
+        default="info",
+        type=str.upper,
+        choices=logging._nameToLevel.keys(),
+        help="Provide logging level. Example: --loglevel debug, default is info",
+    )
     args = None
     try:
         args = parser.parse_args(argv)
@@ -276,9 +277,7 @@ def main(argv=None):
     elif command == "subscriptions":
         return append_recent_subscriptions(config, args)
     else:
-        print(
-            f"Invalid command '{args.command}'.  Valid commands: {','.join(COMMANDS)}"
-        )
+        print(f"Invalid command '{args.command}'.  Valid commands: {','.join(COMMANDS)}")
         return 1
 
 

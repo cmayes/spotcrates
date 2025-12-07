@@ -56,29 +56,21 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.playlists.append_daily_mix(randomize=False, target_name=None)
 
-        self.spotify.playlist_add_items.assert_called_with(
-            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
-        )
+        self.spotify.playlist_add_items.assert_called_with("1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"])
 
     def test_append_daily_mix_random_target(self):
         self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
 
         self.spotify.me.return_value = {"id": "testuser"}
-        self.spotify.user_playlist_create.return_value = {
-            "id": "1JJB9ICuIoE6aD4jg9vgmV"
-        }
+        self.spotify.user_playlist_create.return_value = {"id": "1JJB9ICuIoE6aD4jg9vgmV"}
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        self.playlists.append_daily_mix(randomize=True, target_name='Custom Target')
+        self.playlists.append_daily_mix(randomize=True, target_name="Custom Target")
 
-        self.spotify.playlist_add_items.assert_called_with(
-            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
-        )
+        self.spotify.playlist_add_items.assert_called_with("1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"])
 
-        self.spotify.user_playlist_create.assert_called_with(
-            "testuser", 'Custom Target', public=False
-        )
+        self.spotify.user_playlist_create.assert_called_with("testuser", "Custom Target", public=False)
 
     def test_append_empty_entries(self):
         self.spotify.current_user_playlists.return_value = {"items": [{}, {}, {}]}
@@ -92,28 +84,18 @@ class DailyAppendTestCase(unittest.TestCase):
     def test_append_daily_mix_missing_target(self):
         self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
         self.spotify.me.return_value = {"id": "testuser"}
-        self.spotify.user_playlist_create.return_value = {
-            "id": "1JJB9ICuIoE6aD4jg9vgmV"
-        }
+        self.spotify.user_playlist_create.return_value = {"id": "1JJB9ICuIoE6aD4jg9vgmV"}
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        local_playlists = Playlists(
-            self.spotify, {"daily_mix_target": "missing_playlist"}
-        )
+        local_playlists = Playlists(self.spotify, {"daily_mix_target": "missing_playlist"})
         local_playlists.append_daily_mix(randomize=False, target_name=None)
-        self.spotify.playlist_add_items.assert_called_with(
-            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
-        )
-        self.spotify.user_playlist_create.assert_called_with(
-            "testuser", "missing_playlist", public=False
-        )
+        self.spotify.playlist_add_items.assert_called_with("1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"])
+        self.spotify.user_playlist_create.assert_called_with("testuser", "missing_playlist", public=False)
 
     # No dailies
     def test_append_daily_mix_no_dailies(self):
-        self.spotify.current_user_playlists.return_value = {
-            "items": PLAYLIST_NO_DAILY_LIST
-        }
+        self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_NO_DAILY_LIST}
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
@@ -157,9 +139,7 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.playlists.append_daily_mix(randomize=False, target_name=None)
 
-        self.spotify.playlist_add_items.assert_called_with(
-            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
-        )
+        self.spotify.playlist_add_items.assert_called_with("1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"])
 
     def test_append_daily_mix_paged_tracks_filter_none(self):
         self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
@@ -177,9 +157,7 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.playlists.append_daily_mix(randomize=False, target_name=None)
 
-        self.spotify.playlist_add_items.assert_called_with(
-            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
-        )
+        self.spotify.playlist_add_items.assert_called_with("1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"])
 
     def test_append_daily_mix_paged_tracks_exception_next(self):
         self.spotify.current_user_playlists.return_value = {"items": PLAYLIST_LIST}
@@ -190,9 +168,7 @@ class DailyAppendTestCase(unittest.TestCase):
 
         self.playlists.append_daily_mix(randomize=False, target_name=None)
 
-        self.spotify.playlist_add_items.assert_called_with(
-            "1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"]
-        )
+        self.spotify.playlist_add_items.assert_called_with("1JJB9ICuIoE6aD4jg9vgmV", ["3DrlHWCoFqHQYGwE8MWsuv"])
 
 
 class ListPlaylistsTestCase(unittest.TestCase):
@@ -234,17 +210,16 @@ class RandomizePlaylistTestCase(unittest.TestCase):
     def test_randomize(self):
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        playlist = {'id': '37i9dQZF1E37hnawmowyJn', 'name': 'test_name'}
+        playlist = {"id": "37i9dQZF1E37hnawmowyJn", "name": "test_name"}
         result = self.playlists.randomize_playlist(playlist)
         self.assertEqual(PlaylistResult.SUCCESS, result)
 
-        self.spotify.playlist_replace_items.assert_called_with(
-            '37i9dQZF1E37hnawmowyJn', ANY)
+        self.spotify.playlist_replace_items.assert_called_with("37i9dQZF1E37hnawmowyJn", ANY)
 
     def test_randomize_exception(self):
-        self.spotify.playlist_items.side_effect = Mock(side_effect=Exception('Bad playlist items'))
+        self.spotify.playlist_items.side_effect = Mock(side_effect=Exception("Bad playlist items"))
 
-        playlist = {'id': '37i9dQZF1E37hnawmowyJn', 'name': 'test_name'}
+        playlist = {"id": "37i9dQZF1E37hnawmowyJn", "name": "test_name"}
         result = self.playlists.randomize_playlist(playlist)
         self.assertEqual(PlaylistResult.FAILURE, result)
 
@@ -253,7 +228,6 @@ class RandomizePlaylistTestCase(unittest.TestCase):
 
 # noinspection PyTypeChecker
 class RecentSubscriptionsTestCase(unittest.TestCase):
-
     def setUp(self):
         self.spotify = MagicMock()
         self.spotify.next.return_value = None
@@ -264,9 +238,7 @@ class RecentSubscriptionsTestCase(unittest.TestCase):
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
         self.spotify.me.return_value = {"id": "testuser"}
-        self.spotify.user_playlist_create.return_value = {
-            "id": "1JJB9ICuIoE6aD4jg9vgmV"
-        }
+        self.spotify.user_playlist_create.return_value = {"id": "1JJB9ICuIoE6aD4jg9vgmV"}
         self.playlists.append_recent_subscriptions(randomize=False, target_name=None)
 
         self.spotify.playlist_add_items.assert_not_called()
@@ -282,17 +254,19 @@ class RecentSubscriptionsTestCase(unittest.TestCase):
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
         self.spotify.me.return_value = {"id": "testuser"}
-        self.spotify.user_playlist_create.return_value = {
-            "id": "1JJB9ICuIoE6aD4jg9vgmV"
-        }
+        self.spotify.user_playlist_create.return_value = {"id": "1JJB9ICuIoE6aD4jg9vgmV"}
         local_playlists.append_recent_subscriptions(randomize=False, target_name=None)
 
         # self.spotify.playlist_add_items(target_list["id"], id_batch)
         call_args = self.spotify.playlist_add_items.call_args.args
         self.assertEqual(2, len(call_args))
         self.assertEqual("1JJB9ICuIoE6aD4jg9vgmV", call_args[0])
-        all_track_ids = ['GWzB3Hhj22I8SLs6Gt9B5O', 'X4snMZtCekj688i8a1H7P7',
-                         'gD5YUJdvxOg2LBURBFg8MO', 'vM3EbgX80HHmN7j7r67X3J']
+        all_track_ids = [
+            "GWzB3Hhj22I8SLs6Gt9B5O",
+            "X4snMZtCekj688i8a1H7P7",
+            "gD5YUJdvxOg2LBURBFg8MO",
+            "vM3EbgX80HHmN7j7r67X3J",
+        ]
         self.assertListEqual(sorted(all_track_ids), sorted(call_args[1]))
         print(f"Call args: {call_args}")
 
@@ -307,24 +281,27 @@ class RecentSubscriptionsTestCase(unittest.TestCase):
 
         self.spotify.playlist_items.side_effect = get_canned_tracks
         self.spotify.me.return_value = {"id": "testuser"}
-        self.spotify.user_playlist_create.return_value = {
-            "id": "1JJB9ICuIoE6aD4jg9vgmV"
-        }
+        self.spotify.user_playlist_create.return_value = {"id": "1JJB9ICuIoE6aD4jg9vgmV"}
         local_playlists.append_recent_subscriptions(randomize=False, target_name=None)
 
         # self.spotify.playlist_add_items(target_list["id"], id_batch)
         call_args = self.spotify.playlist_add_items.call_args.args
         self.assertEqual(2, len(call_args))
         self.assertEqual("1JJB9ICuIoE6aD4jg9vgmV", call_args[0])
-        all_track_ids = ['GWzB3Hhj22I8SLs6Gt9B5O', 'Q2zReqJDrr0GMyu8cU8KtD',
-                         'X4snMZtCekj688i8a1H7P7', 'gD5YUJdvxOg2LBURBFg8MO',
-                         'sl2AA4JIQbn2R3eRkAsvx0', 'vM3EbgX80HHmN7j7r67X3J', 'yHBi3S6eRcld0JtNYzmy3k']
+        all_track_ids = [
+            "GWzB3Hhj22I8SLs6Gt9B5O",
+            "Q2zReqJDrr0GMyu8cU8KtD",
+            "X4snMZtCekj688i8a1H7P7",
+            "gD5YUJdvxOg2LBURBFg8MO",
+            "sl2AA4JIQbn2R3eRkAsvx0",
+            "vM3EbgX80HHmN7j7r67X3J",
+            "yHBi3S6eRcld0JtNYzmy3k",
+        ]
         self.assertListEqual(sorted(all_track_ids), sorted(call_args[1]))
         print(f"Call args: {call_args}")
 
 
 class PlaylistFilterTestCase(unittest.TestCase):
-
     def setUp(self):
         self.spotify = MagicMock()
         self.spotify.next.return_value = None
@@ -333,17 +310,17 @@ class PlaylistFilterTestCase(unittest.TestCase):
     def test_all_valid(self):
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        result = self.playlists._filter_for_tracks('37i9dQZF1E37hnawmowyJn')
+        result = self.playlists._filter_for_tracks("37i9dQZF1E37hnawmowyJn")
 
-        tracks = get_canned_tracks('37i9dQZF1E37hnawmowyJn')
+        tracks = get_canned_tracks("37i9dQZF1E37hnawmowyJn")
 
-        self.assertEqual(tracks['items'], result)
+        self.assertEqual(tracks["items"], result)
 
     def test_some_invalid(self):
         self.spotify.playlist_items.side_effect = get_canned_tracks
 
-        result = self.playlists._filter_for_tracks('some_invalid')
+        result = self.playlists._filter_for_tracks("some_invalid")
 
-        tracks = get_canned_tracks('minus_invalid')
+        tracks = get_canned_tracks("minus_invalid")
 
-        self.assertEqual(tracks['items'], result)
+        self.assertEqual(tracks["items"], result)

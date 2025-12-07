@@ -64,4 +64,4 @@ test:
 	uv run pytest
 
 test-cov:
-	uv run pytest --cov=cmayes --cov-report=term-missing
+	uv run pytest --cov=spotcrates --cov-report=term-missing

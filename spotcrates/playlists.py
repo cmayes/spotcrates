@@ -48,7 +48,6 @@ class PlaylistResult(Enum):
 
 
 class Playlists:
-
     def __init__(self, spotify: Spotify, config: Dict | None = None):
         """Creates an instance of the playlist manipulation class.
 
@@ -123,24 +122,18 @@ class Playlists:
         if not target_list:
             me = self.spotify.me()
 
-            target_list = self.spotify.user_playlist_create(
-                me["id"], daily_mix_target, public=False
-            )
+            target_list = self.spotify.user_playlist_create(me["id"], daily_mix_target, public=False)
 
         # user_playlist_add_tracks(user, playlist_id, tracks, position=None)
         if not dailies:
-            self.logger.warning(
-                f"No daily mixes found with the prefix '{daily_mix_prefix}'"
-            )
+            self.logger.warning(f"No daily mixes found with the prefix '{daily_mix_prefix}'")
             return
 
         exclude_ids = self._get_excludes(exclude_lists, target_list)
 
         add_tracks, orig_daily_count = self._fetch_daily_tracks(dailies, exclude_ids)
 
-        self.logger.info(
-            f"{len(add_tracks)} to add from an original count of {orig_daily_count}"
-        )
+        self.logger.info(f"{len(add_tracks)} to add from an original count of {orig_daily_count}")
         if add_tracks:
             if randomize:
                 random.shuffle(add_tracks)
@@ -166,8 +159,7 @@ class Playlists:
             self.logger.warning(f"Problems randomizing playlist '{playlist['name']}'", exc_info=True)
             return PlaylistResult.FAILURE
 
-    def append_recent_subscriptions(
-            self, randomize: bool, target_name: str, playlist_set_filter: ValueFilter| None = None):
+    def append_recent_subscriptions(self, randomize: bool, target_name: str, playlist_set_filter: ValueFilter | None = None):
         """Adds new tracks from configured lists to the target list. Newness is determined
         based on the configured maximum age, which is 3 days by default.
 
@@ -201,15 +193,14 @@ class Playlists:
         if not target_list:
             me = self.spotify.me()
 
-            target_list = self.spotify.user_playlist_create(
-                me["id"], subscriptions_target, public=False
-            )
+            target_list = self.spotify.user_playlist_create(me["id"], subscriptions_target, public=False)
 
         excludes = self._get_excludes(exclude_lists, target_list)
 
         include_zero_timestamps = self.config.get("include_zero_timestamps", False)
         playlist_ids = self._get_subscription_playlist_ids(
-            oldest_timestamp, excludes, include_zero_timestamps, playlist_set_filter)
+            oldest_timestamp, excludes, include_zero_timestamps, playlist_set_filter
+        )
 
         self.logger.info(f"{len(playlist_ids)} subscription tracks to add")
 
@@ -226,22 +217,17 @@ class Playlists:
 
         if cfg_oldest_timestamp:
             try:
-                return datetime.datetime.strptime(
-                    cfg_oldest_timestamp, ISO_8601_TIMESTAMP_FORMAT
-                )
+                return datetime.datetime.strptime(cfg_oldest_timestamp, ISO_8601_TIMESTAMP_FORMAT)
             except Exception:
-                self.logger.warning(f"Could not parse oldest_timestamp value {cfg_oldest_timestamp}",
-                                    exc_info=True)
+                self.logger.warning(f"Could not parse oldest_timestamp value {cfg_oldest_timestamp}", exc_info=True)
 
         max_age = "NO_MAX_AGE"
         try:
             max_age = self.config.get("max_age", "NO_MAX_AGE")
 
-            return datetime.datetime.now() - datetime.timedelta(
-                seconds=Duration(max_age).to_seconds()
-            )
+            return datetime.datetime.now() - datetime.timedelta(seconds=Duration(max_age).to_seconds())
         except Exception as e:
-            raise PlaylistConfigException(f"Could not parse track age {max_age}", e)
+            raise PlaylistConfigException(f"Could not parse track age {max_age}", e) from e
 
     def randomize_playlists(self, playlists: List[str]) -> Dict[str, PlaylistResult]:
         """Replaces the tracks in the target lists with a randomized version of the same tracks.
@@ -258,7 +244,7 @@ class Playlists:
             if list_name and list_name.lower() in lower_playlists:
                 results[list_name] = self.randomize_playlist(playlist)
             else:
-                list_id = playlist['id']
+                list_id = playlist["id"]
                 if list_id in playlists:
                     results[list_id] = self.randomize_playlist(playlist)
 
@@ -278,7 +264,7 @@ class Playlists:
                 dest_name = arguments[1]
 
             # TODO: make public flag settable
-            new_playlist = self.spotify.user_playlist_create(self.spotify.me()['id'], dest_name, public=False)
+            new_playlist = self.spotify.user_playlist_create(self.spotify.me()["id"], dest_name, public=False)
             tracks_to_copy = self._get_playlist_name_tracks(source_name)
 
             if randomize:
@@ -313,20 +299,16 @@ class Playlists:
         for daily in dailies:
             daily_items = self._get_playlist_id_tracks(daily["id"])
             orig_daily_count += len(daily_items)
-            add_tracks.extend(
-                [
-                    daily_item
-                    for daily_item in daily_items
-                    if daily_item["track"]["id"] not in exclude_ids
-                ]
-            )
+            add_tracks.extend([daily_item for daily_item in daily_items if daily_item["track"]["id"] not in exclude_ids])
         return add_tracks, orig_daily_count
 
-    def _get_subscription_playlist_ids(self,
-                                       oldest_timestamp: datetime,
-                                       excluded_ids: Iterable[str],
-                                       include_zero_timestamps: bool,
-                                       playlist_set_filter: ValueFilter) -> Set[str]:
+    def _get_subscription_playlist_ids(
+        self,
+        oldest_timestamp: datetime,
+        excluded_ids: Iterable[str],
+        include_zero_timestamps: bool,
+        playlist_set_filter: ValueFilter,
+    ) -> Set[str]:
         target_playlist_ids: Set[str] = set()
         subscription_playlists = self.config.get("playlists")
         if not subscription_playlists:
@@ -343,9 +325,7 @@ class Playlists:
                 iso_added = track.get("added_at")
                 if iso_added:
                     try:
-                        track_timestamp = datetime.datetime.strptime(
-                            iso_added, ISO_8601_TIMESTAMP_FORMAT
-                        )
+                        track_timestamp = datetime.datetime.strptime(iso_added, ISO_8601_TIMESTAMP_FORMAT)
                         if self._include_for_added_at(oldest_timestamp, track_timestamp, include_zero_timestamps):
                             track_id = track.get("track", {}).get("id")
                             if track_id and track_id not in excluded_ids:
@@ -357,21 +337,14 @@ class Playlists:
                         )
                 else:
                     logging.debug("No 'added_at' field for track. Skipping.")
-            self.logger.debug(
-                f"Found {len(set_playlist_ids)} newer than {oldest_timestamp} "
-                f"in playlist set '{playlist_set}'"
-            )
+            self.logger.debug(f"Found {len(set_playlist_ids)} newer than {oldest_timestamp} in playlist set '{playlist_set}'")
             target_playlist_ids.update(set_playlist_ids)
 
-        self.logger.debug(
-            f"Found a total of {len(target_playlist_ids)} newer than {oldest_timestamp}"
-        )
+        self.logger.debug(f"Found a total of {len(target_playlist_ids)} newer than {oldest_timestamp}")
         return target_playlist_ids
 
     @staticmethod
-    def _include_for_added_at(oldest_timestamp: datetime,
-                              track_timestamp: datetime,
-                              include_zero_timestamps: bool) -> bool:
+    def _include_for_added_at(oldest_timestamp: datetime, track_timestamp: datetime, include_zero_timestamps: bool) -> bool:
         if include_zero_timestamps:
             return track_timestamp >= oldest_timestamp or track_timestamp == ZERO_TIMESTAMP
         else:
@@ -382,9 +355,7 @@ class Playlists:
         for playlist_id in args:
             playlist_items = self._filter_for_tracks(playlist_id)
 
-            track_ids.update(
-                {playlist_item.get("track", {}).get("id") for playlist_item in playlist_items}
-            )
+            track_ids.update({playlist_item.get("track", {}).get("id") for playlist_item in playlist_items})
 
         # Remove None in case any IDs failed to resolve
         with suppress(KeyError):
@@ -396,9 +367,9 @@ class Playlists:
         name_ids = {}
         for playlist in self.get_all_playlists():
             if lower:
-                name_ids[playlist['name'].lower()] = playlist['id']
+                name_ids[playlist["name"].lower()] = playlist["id"]
             else:
-                name_ids[playlist['name']] = playlist['id']
+                name_ids[playlist["name"]] = playlist["id"]
 
         return name_ids
 
@@ -437,7 +408,7 @@ class Playlists:
             return []
         filtered_tracks = []
         for cur_track in all_tracks:
-            if cur_track.get('track') and cur_track['track'].get('id'):
+            if cur_track.get("track") and cur_track["track"].get("id"):
                 filtered_tracks.append(cur_track)
         return filtered_tracks
 

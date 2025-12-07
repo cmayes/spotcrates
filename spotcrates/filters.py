@@ -62,7 +62,6 @@ class FieldName(Enum):
 
 
 class FilterLookup(BaseLookup):
-
     def eval_filter_type(self, filter_type) -> FilterType:
         filter_type_type = type(filter_type)
         if filter_type_type is FilterType:
@@ -87,7 +86,6 @@ class FilterLookup(BaseLookup):
 
 
 class FieldLookup(BaseLookup):
-
     def eval_field_name(self, field_name):
         field_name_type = type(field_name)
         if field_name_type is FieldName:
@@ -116,7 +114,6 @@ class FieldLookup(BaseLookup):
 
 
 class FieldFilter:
-
     def __init__(self, field, filter_type, value):
         """Represents a filter with the given settings.
 
@@ -143,11 +140,7 @@ class FieldFilter:
 
     def __eq__(self, other):
         if isinstance(other, FieldFilter):
-            return (
-                    self.field == other.field
-                    and self.value == other.value
-                    and self.filter_type == other.filter_type
-            )
+            return self.field == other.field and self.value == other.value and self.filter_type == other.filter_type
         return NotImplemented
 
 
@@ -173,24 +166,16 @@ def parse_filters(filters: str) -> Dict[FieldName, List[FieldFilter]]:
         exp_field_count = len(raw_exp)
 
         if exp_field_count < 1:
-            raise InvalidFilterException(
-                f"Invalid filter expression {':'.join(raw_exp)}"
-            )
+            raise InvalidFilterException(f"Invalid filter expression {':'.join(raw_exp)}")
 
         stripped_exp = [field.strip() for field in raw_exp]
 
         if exp_field_count == 1:
-            field_filter = FieldFilter(
-                FieldName.ALL, FilterType.CONTAINS, stripped_exp[0]
-            )
+            field_filter = FieldFilter(FieldName.ALL, FilterType.CONTAINS, stripped_exp[0])
         elif exp_field_count == 2:
-            field_filter = FieldFilter(
-                stripped_exp[0], FilterType.CONTAINS, stripped_exp[1]
-            )
+            field_filter = FieldFilter(stripped_exp[0], FilterType.CONTAINS, stripped_exp[1])
         else:
-            field_filter = FieldFilter(
-                stripped_exp[0], stripped_exp[1], stripped_exp[2]
-            )
+            field_filter = FieldFilter(stripped_exp[0], stripped_exp[1], stripped_exp[2])
         parsed_filters[field_filter.field].append(field_filter)
 
     return parsed_filters
@@ -223,9 +208,7 @@ def filter_list(items, filters):
                         if cur_filter.passes(item_field):
                             matching_items.append(cur_item)
 
-                filtered_items = list(
-                    {v[FieldName.SPOTIFY_ID]: v for v in matching_items}.values()
-                )
+                filtered_items = list({v[FieldName.SPOTIFY_ID]: v for v in matching_items}.values())
 
     return filtered_items
 

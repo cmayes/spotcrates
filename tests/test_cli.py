@@ -11,56 +11,56 @@ class ArgparseTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.code, 2)
 
     def test_command(self):
-        args, result_code = parse_cmdline(['test-command'])
+        args, result_code = parse_cmdline(["test-command"])
         self.assertEqual(0, result_code)
-        self.assertEqual('test-command', args.command)
+        self.assertEqual("test-command", args.command)
         self.assertFalse(args.randomize)
 
     def test_random_before(self):
-        args, result_code = parse_cmdline(['-r', 'test-command'])
+        args, result_code = parse_cmdline(["-r", "test-command"])
         self.assertEqual(0, result_code)
-        self.assertEqual('test-command', args.command)
+        self.assertEqual("test-command", args.command)
         self.assertTrue(args.randomize)
 
     def test_random_after(self):
-        args, result_code = parse_cmdline(['test-command', '-r'])
+        args, result_code = parse_cmdline(["test-command", "-r"])
         self.assertEqual(0, result_code)
-        self.assertEqual('test-command', args.command)
+        self.assertEqual("test-command", args.command)
         self.assertTrue(args.randomize)
 
     def test_random_after_1arg(self):
-        args, result_code = parse_cmdline(['test-command', 'arg1', '-r'])
+        args, result_code = parse_cmdline(["test-command", "arg1", "-r"])
         self.assertEqual(0, result_code)
-        self.assertEqual('test-command', args.command)
+        self.assertEqual("test-command", args.command)
         self.assertTrue(args.randomize)
-        self.assertSequenceEqual(['arg1'], args.arguments)
+        self.assertSequenceEqual(["arg1"], args.arguments)
 
     def test_random_after_2args(self):
-        args, result_code = parse_cmdline(['test-command', 'arg1', 'arg2', '-r'])
+        args, result_code = parse_cmdline(["test-command", "arg1", "arg2", "-r"])
         self.assertEqual(0, result_code)
-        self.assertEqual('test-command', args.command)
+        self.assertEqual("test-command", args.command)
         self.assertTrue(args.randomize)
-        self.assertSequenceEqual(['arg1', 'arg2'], args.arguments)
+        self.assertSequenceEqual(["arg1", "arg2"], args.arguments)
 
     def test_random_after_3args(self):
-        args, result_code = parse_cmdline(['test-command', 'arg1', 'arg2', 'arg3', '-r'])
+        args, result_code = parse_cmdline(["test-command", "arg1", "arg2", "arg3", "-r"])
         self.assertEqual(0, result_code)
-        self.assertEqual('test-command', args.command)
+        self.assertEqual("test-command", args.command)
         self.assertTrue(args.randomize)
-        self.assertSequenceEqual(['arg1', 'arg2', 'arg3'], args.arguments)
+        self.assertSequenceEqual(["arg1", "arg2", "arg3"], args.arguments)
 
     def test_randomize_all_command(self):
-        args, result_code = parse_cmdline(['randomize-all'])
+        args, result_code = parse_cmdline(["randomize-all"])
         self.assertEqual(0, result_code)
-        self.assertEqual('randomize-all', args.command)
+        self.assertEqual("randomize-all", args.command)
         self.assertFalse(args.randomize)
         self.assertSequenceEqual([], args.arguments)
 
     def test_randomize_command_with_args(self):
-        args, result_code = parse_cmdline(['randomize', 'playlist1', 'playlist2'])
+        args, result_code = parse_cmdline(["randomize", "playlist1", "playlist2"])
         self.assertEqual(0, result_code)
-        self.assertEqual('randomize', args.command)
-        self.assertSequenceEqual(['playlist1', 'playlist2'], args.arguments)
+        self.assertEqual("randomize", args.command)
+        self.assertSequenceEqual(["playlist1", "playlist2"], args.arguments)
 
 
 class CommandLookupTestCase(unittest.TestCase):
@@ -100,17 +100,22 @@ class CommandLookupTestCase(unittest.TestCase):
 
 # playlist_sets
 
+
 def test_playlist_sets():
     assert playlist_sets("a,b,c") == ["a", "b", "c"]
+
 
 def test_playlist_sets_pipes():
     assert playlist_sets("a|b|c") == ["a", "b", "c"]
 
+
 def test_playlist_sets_pipes_and_commas():
     assert playlist_sets("a|b,c") == ["a", "b", "c"]
 
+
 def test_playlist_sets_blank():
     assert playlist_sets("") == [""]
+
 
 def test_playlist_sets_none():
     assert playlist_sets(None) == [""]

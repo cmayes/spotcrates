@@ -108,9 +108,7 @@ class ParseFiltersTestCase(unittest.TestCase):
         owner_filters = filters.get(FieldName.OWNER)
         self.assertEqual(1, len(owner_filters))
         first_filter = owner_filters[0]
-        self.assertEqual(
-            FieldFilter(FieldName.OWNER, FilterType.CONTAINS, "testuser"), first_filter
-        )
+        self.assertEqual(FieldFilter(FieldName.OWNER, FilterType.CONTAINS, "testuser"), first_filter)
 
     def test_desc(self):
         filters = parse_filters("desc:sta:beginning")
@@ -159,9 +157,7 @@ class ParseFiltersTestCase(unittest.TestCase):
         )
 
         second_size_filter = size_filters[1]
-        self.assertEqual(
-            FieldFilter(FieldName.SIZE, FilterType.LESS, "1234"), second_size_filter
-        )
+        self.assertEqual(FieldFilter(FieldName.SIZE, FilterType.LESS, "1234"), second_size_filter)
 
     def test_implicit_all(self):
         filters = parse_filters("filterval")
