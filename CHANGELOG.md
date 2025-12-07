@@ -1,5 +1,10 @@
 # (Unreleased)
 
+# Version 0.8.0
+
+## Updated
+- Moved to uv.
+
 # Version 0.7.4
 
 ## Updated
