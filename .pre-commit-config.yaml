@@ -15,11 +15,12 @@ repos:
       - id: requirements-txt-fixer
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.0  # or whatever version you're using
+    # Ruff version.
+    rev: v0.14.10
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
-      - id: ruff-format  # if you're also using the formatter
+      - id: ruff-format
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.21.2
