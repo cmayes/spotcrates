@@ -1,5 +1,10 @@
 # (Unreleased)
 
+# Version 0.8.3
+
+## Updated
+- Improved error handling when we don't have permission to randomize a playlist.
+
 # Version 0.8.0
 
 ## Updated

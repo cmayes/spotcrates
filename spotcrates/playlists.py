@@ -155,8 +155,19 @@ class Playlists:
             random.shuffle(playlist_tracks)
             self._add_tracks_to_playlist(playlist, playlist_tracks, replace_playlist=True)
             return PlaylistResult.SUCCESS
+        except SpotifyException as e:
+            if e.http_status == 403:
+                self.logger.warning(f"Permission denied for playlist '{playlist['name']}' (not owned or not collaborative)")
+            else:
+                self.logger.warning(
+                    f"Spotify API error randomizing playlist '{playlist['name']}': {e.msg}",
+                    exc_info=self.logger.isEnabledFor(logging.DEBUG),
+                )
+            return PlaylistResult.FAILURE
         except Exception:
-            self.logger.warning(f"Problems randomizing playlist '{playlist['name']}'", exc_info=True)
+            self.logger.warning(
+                f"Problems randomizing playlist '{playlist['name']}'", exc_info=self.logger.isEnabledFor(logging.DEBUG)
+            )
             return PlaylistResult.FAILURE
 
     def append_recent_subscriptions(self, randomize: bool, target_name: str, playlist_set_filter: ValueFilter | None = None):
@@ -304,7 +315,7 @@ class Playlists:
 
     def _get_subscription_playlist_ids(
         self,
-        oldest_timestamp: datetime,
+        oldest_timestamp: datetime.datetime,
         excluded_ids: Iterable[str],
         include_zero_timestamps: bool,
         playlist_set_filter: ValueFilter,
@@ -344,7 +355,9 @@ class Playlists:
         return target_playlist_ids
 
     @staticmethod
-    def _include_for_added_at(oldest_timestamp: datetime, track_timestamp: datetime, include_zero_timestamps: bool) -> bool:
+    def _include_for_added_at(
+        oldest_timestamp: datetime.datetime, track_timestamp: datetime.datetime, include_zero_timestamps: bool
+    ) -> bool:
         if include_zero_timestamps:
             return track_timestamp >= oldest_timestamp or track_timestamp == ZERO_TIMESTAMP
         else:
